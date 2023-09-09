@@ -1,0 +1,21 @@
+[gd_scene load_steps=4 format=3 uid="uid://cfb1ot1iym63"]
+
+[ext_resource type="Script" path="res://preston_wip/character/character.gd" id="1_pt7t7"]
+[ext_resource type="Texture2D" uid="uid://dd4bha17t0n6s" path="res://icon.svg" id="2_j04u4"]
+
+[sub_resource type="CapsuleShape2D" id="CapsuleShape2D_wj45g"]
+radius = 11.0
+height = 68.0
+
+[node name="Character" type="CharacterBody2D"]
+rotation = -1.5708
+script = ExtResource("1_pt7t7")
+
+[node name="Sprite2D" type="Sprite2D" parent="."]
+position = Vector2(-3.57628e-07, -1.66893e-06)
+rotation = 1.5708
+scale = Vector2(0.546875, 0.171875)
+texture = ExtResource("2_j04u4")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+shape = SubResource("CapsuleShape2D_wj45g")
