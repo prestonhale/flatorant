@@ -1,20 +1,20 @@
-[gd_scene load_steps=3 format=3 uid="uid://7w718rve26mx"]
+[gd_scene load_steps=3 format=3 uid="uid://cfb1ot1iym63"]
 
-[ext_resource type="Texture2D" uid="uid://dd4bha17t0n6s" path="res://icon.svg" id="1_2qqtg"]
+[ext_resource type="Texture2D" uid="uid://dd4bha17t0n6s" path="res://icon.svg" id="1_8604r"]
 
-[sub_resource type="CapsuleShape2D" id="CapsuleShape2D_3yp87"]
+[sub_resource type="CapsuleShape2D" id="CapsuleShape2D_wj45g"]
 
-[node name="World" type="Node2D"]
+[node name="character" type="Node2D"]
 
 [node name="CharacterBody2D" type="CharacterBody2D" parent="."]
 position = Vector2(551, 338)
 rotation = -1.5708
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="CharacterBody2D"]
-shape = SubResource("CapsuleShape2D_3yp87")
+shape = SubResource("CapsuleShape2D_wj45g")
 
 [node name="Sprite2D" type="Sprite2D" parent="CharacterBody2D"]
 position = Vector2(-1.5, -0.500028)
 rotation = 1.5708
 scale = Vector2(0.695312, 0.257812)
-texture = ExtResource("1_2qqtg")
+texture = ExtResource("1_8604r")
