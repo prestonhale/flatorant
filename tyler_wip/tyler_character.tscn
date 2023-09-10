@@ -6,33 +6,33 @@
 
 [sub_resource type="CapsuleShape2D" id="CapsuleShape2D_wj45g"]
 
-[node name="character w_ rays" type="Node2D"]
-scale = Vector2(0.883896, 0.862095)
-
-[node name="CharacterBody2D" type="CharacterBody2D" parent="."]
+[node name="CharacterBody2D" type="CharacterBody2D"]
 rotation = -1.5708
 script = ExtResource("1_b23y7")
 
-[node name="CollisionShape2D" type="CollisionShape2D" parent="CharacterBody2D"]
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
 shape = SubResource("CapsuleShape2D_wj45g")
 
-[node name="Player Sprite2D" type="Sprite2D" parent="CharacterBody2D"]
+[node name="Player Sprite2D" type="Sprite2D" parent="."]
 position = Vector2(-16, -3.00007)
 rotation = 1.5708
 scale = Vector2(0.65625, 0.484375)
 texture = ExtResource("1_qx17g")
 
-[node name="Pointer" type="Node2D" parent="CharacterBody2D"]
+[node name="Pointer" type="Node2D" parent="."]
 
-[node name="RayCast2D" type="RayCast2D" parent="CharacterBody2D/Pointer"]
+[node name="RayCast2D" type="RayCast2D" parent="Pointer"]
 rotation = -1.5708
 target_position = Vector2(0, 1000)
 collision_mask = 14
 collide_with_areas = true
 
-[node name="VisionCone2D" parent="CharacterBody2D" instance=ExtResource("4_bwok8")]
+[node name="VisionCone2D" parent="." instance=ExtResource("4_bwok8")]
 rotation = -1.5708
 angle_deg = 90
 ray_count = 50
 collision_layer_mask = 13
 debug_lines = true
+
+[node name="character w_ rays" type="Node2D" parent="."]
+scale = Vector2(0.883896, 0.862095)

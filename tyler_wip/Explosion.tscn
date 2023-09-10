@@ -1,8 +1,32 @@
 [gd_scene load_steps=2 format=3 uid="uid://bpmg311mvo7fr"]
 
-[ext_resource type="Script" path="res://tyler_wip/shooting.gd" id="1_xt7f3"]
+[sub_resource type="GDScript" id="GDScript_3fdgl"]
+script/source = "extends Node2D
+
+
+# Called when the node enters the scene tree for the first time.
+func _ready():
+	pass # Replace with function body.
+
+
+# Called every frame. 'delta' is the elapsed time since the previous frame.
+func _process(delta):
+		if Input.is_action_just_pressed(\"fire\"):
+			print(\"shoot\")
+			if ray.is_colliding():
+				print(\"hit\") 
+				hitspot = ray.get_collision_point()
+				print(hitspot)
+				queue_redraw()
+			
+
+func _draw():
+	if hitspot:
+		draw_circle(to_local(hitspot), 10, Color.RED)
+	pass
+"
 
 [node name="Explosion" type="Node2D"]
 
 [node name="Node2D" type="Node2D" parent="."]
-script = ExtResource("1_xt7f3")
+script = SubResource("GDScript_3fdgl")
