@@ -1,8 +1,8 @@
-[gd_scene load_steps=5 format=3 uid="uid://cb77pb6ks8uxt"]
+[gd_scene load_steps=5 format=3 uid="uid://cndobonncxevc"]
 
 [ext_resource type="Script" path="res://tyler_wip/p_worldvTyler.gd" id="1_2outp"]
-[ext_resource type="TileSet" uid="uid://jhxowywlfj7i" path="res://tiles/hi-rest-tiles.tres" id="1_cwfn7"]
-[ext_resource type="PackedScene" uid="uid://dah22sp03kl6y" path="res://tyler_wip/tyler_character.tscn" id="2_a83kq"]
+[ext_resource type="TileSet" uid="uid://cdewitph8rjjp" path="res://tiles/hi-rest-tiles.tres" id="1_cwfn7"]
+[ext_resource type="PackedScene" uid="uid://cynmdo7kw10h8" path="res://tyler_wip/tyler_character.tscn" id="2_a83kq"]
 [ext_resource type="Script" path="res://tyler_wip/CircleDrawer.gd" id="4_3t50b"]
 
 [node name="p_world" type="Node2D"]
@@ -17,5 +17,5 @@ layer_0/tile_data = PackedInt32Array(0, 0, 0, 65536, 0, 0, 131072, 0, 0, 196608,
 [node name="character" parent="." instance=ExtResource("2_a83kq")]
 position = Vector2(267, 512)
 
-[node name="CircleDrawer" type="Node2D" parent="."]
+[node name="DebugDrawer" type="Node2D" parent="."]
 script = ExtResource("4_3t50b")

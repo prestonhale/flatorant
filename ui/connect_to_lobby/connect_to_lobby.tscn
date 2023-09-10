@@ -1,0 +1,26 @@
+[gd_scene format=3 uid="uid://cev2pvlm8tegn"]
+
+[node name="connect_to_lobby" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Net" type="VBoxContainer" parent="."]
+layout_mode = 0
+offset_right = 40.0
+offset_bottom = 40.0
+
+[node name="Options" type="HBoxContainer" parent="Net"]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="Net/Options"]
+layout_mode = 2
+
+[node name="Host" type="Button" parent="Net/Options"]
+layout_mode = 2
+
+[node name="Connect" type="Button" parent="Net/Options"]
+layout_mode = 2

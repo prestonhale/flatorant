@@ -1,4 +1,4 @@
-[gd_scene load_steps=5 format=3 uid="uid://dah22sp03kl6y"]
+[gd_scene load_steps=5 format=3 uid="uid://cynmdo7kw10h8"]
 
 [ext_resource type="Script" path="res://preston_wip/character/character.gd" id="1_b23y7"]
 [ext_resource type="Texture2D" uid="uid://dd4bha17t0n6s" path="res://icon.svg" id="1_qx17g"]

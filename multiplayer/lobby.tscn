@@ -1,0 +1,6 @@
+[gd_scene load_steps=2 format=3 uid="uid://dmv14fyuxo8vh"]
+
+[ext_resource type="Script" path="res://multiplayer/lobby.gd" id="1_erhqp"]
+
+[node name="multiplayer" type="Node"]
+script = ExtResource("1_erhqp")
