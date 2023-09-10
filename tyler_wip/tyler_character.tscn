@@ -1,8 +1,7 @@
-[gd_scene load_steps=6 format=3 uid="uid://dah22sp03kl6y"]
+[gd_scene load_steps=5 format=3 uid="uid://dah22sp03kl6y"]
 
 [ext_resource type="Script" path="res://preston_wip/character/character.gd" id="1_b23y7"]
 [ext_resource type="Texture2D" uid="uid://dd4bha17t0n6s" path="res://icon.svg" id="1_qx17g"]
-[ext_resource type="Texture2D" uid="uid://ckvwetleax43g" path="res://tyler_wip/arrow.png" id="3_roqr0"]
 [ext_resource type="PackedScene" uid="uid://kf8tqdlm8c5t" path="res://addons/vision_cone_2d/vision_cone_2d_template.tscn" id="4_bwok8"]
 
 [sub_resource type="CapsuleShape2D" id="CapsuleShape2D_wj45g"]
@@ -24,16 +23,10 @@ scale = Vector2(0.65625, 0.484375)
 texture = ExtResource("1_qx17g")
 
 [node name="Pointer" type="Node2D" parent="CharacterBody2D"]
-position = Vector2(338.002, -550.999)
-rotation = 1.5708
-
-[node name="Sprite2D" type="Sprite2D" parent="CharacterBody2D/Pointer"]
-position = Vector2(547, 306)
-scale = Vector2(0.184524, 0.0666667)
-texture = ExtResource("3_roqr0")
 
 [node name="RayCast2D" type="RayCast2D" parent="CharacterBody2D/Pointer"]
-target_position = Vector2(800, 0)
+rotation = -1.5708
+target_position = Vector2(0, 1000)
 collision_mask = 14
 collide_with_areas = true
 

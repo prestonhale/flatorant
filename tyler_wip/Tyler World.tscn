@@ -2,8 +2,26 @@
 
 [ext_resource type="TileSet" uid="uid://d0exbwvlof553" path="res://tiles/tiles.tres" id="1_c3ep2"]
 [ext_resource type="PackedScene" uid="uid://cfb1ot1iym63" path="res://preston_wip/character/character.tscn" id="2_j8fk8"]
-[ext_resource type="Script" path="res://tyler_wip/RayCast2D_bullet_time.gd" id="3_bs3te"]
 [ext_resource type="PackedScene" uid="uid://bwckxhnx00c8i" path="res://tyler_wip/brain dead character/bdcharacter.tscn" id="3_kw8rn"]
+
+[sub_resource type="GDScript" id="GDScript_rv4x5"]
+script/source = "extends RayCast2D
+
+@onready var pointer = $Pointer
+@onready var ray = $Pointer/RayCast2D
+
+# Called when the node enters the scene tree for the first time.
+func _ready():
+	pass # Replace with function body.
+
+
+# Called every frame. 'delta' is the elapsed time since the previous frame.
+func _process(delta):
+	if Input.is_action_pressed(\"fire\"):
+	#and ray.is_colliding(): 
+		print(\"shoot\")
+
+"
 
 [node name="Tyler World" type="Node2D"]
 
@@ -17,7 +35,7 @@ layer_0/tile_data = PackedInt32Array(0, 0, 0, 1, 0, 0, 2, 0, 0, 3, 0, 0, 4, 0, 0
 position = Vector2(97, 115)
 
 [node name="RayCast2D" type="RayCast2D" parent="Character"]
-script = ExtResource("3_bs3te")
+script = SubResource("GDScript_rv4x5")
 
 [node name="BDCharacter" parent="." instance=ExtResource("3_kw8rn")]
 position = Vector2(305, 125)
