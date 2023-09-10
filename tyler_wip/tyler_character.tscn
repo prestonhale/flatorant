@@ -1,15 +1,16 @@
-[gd_scene load_steps=5 format=3 uid="uid://dah22sp03kl6y"]
+[gd_scene load_steps=6 format=3 uid="uid://dah22sp03kl6y"]
 
 [ext_resource type="Script" path="res://preston_wip/character/character.gd" id="1_b23y7"]
 [ext_resource type="Texture2D" uid="uid://dd4bha17t0n6s" path="res://icon.svg" id="1_qx17g"]
-[ext_resource type="Texture2D" uid="uid://ckvwetleax43g" path="res://arrow.png" id="2_njxw3"]
+[ext_resource type="Texture2D" uid="uid://ckvwetleax43g" path="res://tyler_wip/arrow.png" id="3_roqr0"]
+[ext_resource type="PackedScene" uid="uid://kf8tqdlm8c5t" path="res://addons/vision_cone_2d/vision_cone_2d_template.tscn" id="4_bwok8"]
 
 [sub_resource type="CapsuleShape2D" id="CapsuleShape2D_wj45g"]
 
-[node name="character" type="Node2D"]
+[node name="character w_ rays" type="Node2D"]
+scale = Vector2(0.883896, 0.862095)
 
 [node name="CharacterBody2D" type="CharacterBody2D" parent="."]
-position = Vector2(551, 338)
 rotation = -1.5708
 script = ExtResource("1_b23y7")
 
@@ -29,9 +30,16 @@ rotation = 1.5708
 [node name="Sprite2D" type="Sprite2D" parent="CharacterBody2D/Pointer"]
 position = Vector2(547, 306)
 scale = Vector2(0.184524, 0.0666667)
-texture = ExtResource("2_njxw3")
+texture = ExtResource("3_roqr0")
 
 [node name="RayCast2D" type="RayCast2D" parent="CharacterBody2D/Pointer"]
 target_position = Vector2(800, 0)
 collision_mask = 14
 collide_with_areas = true
+
+[node name="VisionCone2D" parent="CharacterBody2D" instance=ExtResource("4_bwok8")]
+rotation = -1.5708
+angle_deg = 90
+ray_count = 50
+collision_layer_mask = 13
+debug_lines = true

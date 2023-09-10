@@ -16,8 +16,7 @@ func get_input(delta):
 	look_at(get_global_mouse_position())
 	
 func _process(delta):
-	if Input.is_action_pressed("fire"):
-		print("shoot")
+	pass
 	
 func _physics_process(delta):
 	get_input(delta)
@@ -29,9 +28,11 @@ func _physics_process(delta):
 			print("hit") 
 			hitspot = ray.get_collision_point()
 			print(hitspot)
+			queue_redraw()
+			
 
 func _draw():
 	if hitspot:
-		draw_circle(hitspot, 10, Color.RED)
+		draw_circle(to_local(hitspot), 10, Color.RED)
 			
 
