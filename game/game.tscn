@@ -1,0 +1,32 @@
+[gd_scene load_steps=3 format=3 uid="uid://ig82qvja135b"]
+
+[ext_resource type="Script" path="res://game/game.gd" id="1_irq42"]
+[ext_resource type="PackedScene" uid="uid://cev2pvlm8tegn" path="res://ui/connect_to_lobby/connect_to_lobby.tscn" id="2_ginb4"]
+
+[node name="Game" type="Node2D"]
+script = ExtResource("1_irq42")
+
+[node name="Level" type="Node" parent="."]
+
+[node name="MultiplayerSpawner" type="MultiplayerSpawner" parent="."]
+_spawnable_scenes = PackedStringArray("res://levels/main_level.tscn")
+spawn_path = NodePath("../Level")
+spawn_limit = 1
+
+[node name="ConnectToLobbyUI" parent="." instance=ExtResource("2_ginb4")]
+anchors_preset = 5
+anchor_left = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.0
+offset_left = 645.0
+offset_top = 18.0
+offset_right = 645.0
+offset_bottom = 18.0
+grow_vertical = 1
+size_flags_horizontal = 3
+size_flags_vertical = 3
+
+[connection signal="pressed" from="ConnectToLobbyUI/Net/Options/Host" to="." method="_on_host_pressed"]
+[connection signal="pressed" from="ConnectToLobbyUI/Net/Options/Connect" to="." method="_on_connect_pressed"]
+
+[editable path="ConnectToLobbyUI"]

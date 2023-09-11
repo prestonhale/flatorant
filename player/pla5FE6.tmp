@@ -24,14 +24,6 @@ properties/0/path = NodePath(".:direction")
 properties/0/spawn = false
 properties/0/sync = true
 properties/0/watch = false
-properties/1/path = NodePath(".:mouse_position")
-properties/1/spawn = true
-properties/1/sync = true
-properties/1/watch = false
-properties/2/path = NodePath(".:fired")
-properties/2/spawn = true
-properties/2/sync = true
-properties/2/watch = false
 
 [sub_resource type="CapsuleShape2D" id="CapsuleShape2D_wj45g"]
 radius = 9.0
@@ -59,6 +51,7 @@ texture = ExtResource("2_bfy5g")
 shape = SubResource("CapsuleShape2D_wj45g")
 
 [node name="VisionCone2D" parent="." instance=ExtResource("3_lt0ua")]
+visible = false
 rotation = -1.5708
 angle_deg = 90
 ray_count = 50
