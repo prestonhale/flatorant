@@ -1,9 +1,8 @@
-[gd_scene load_steps=9 format=3 uid="uid://dp8t0836j5usl"]
+[gd_scene load_steps=8 format=3 uid="uid://dp8t0836j5usl"]
 
 [ext_resource type="Script" path="res://preston_wip/character/character.gd" id="1_vid82"]
 [ext_resource type="Texture2D" uid="uid://dd4bha17t0n6s" path="res://icon.svg" id="2_bfy5g"]
 [ext_resource type="PackedScene" uid="uid://kf8tqdlm8c5t" path="res://addons/vision_cone_2d/vision_cone_2d_template.tscn" id="3_lt0ua"]
-[ext_resource type="Script" path="res://player/health.gd" id="3_s6xvg"]
 [ext_resource type="Script" path="res://player/player_input.gd" id="4_3clxj"]
 
 [sub_resource type="SceneReplicationConfig" id="SceneReplicationConfig_fii6g"]
@@ -42,51 +41,19 @@ height = 54.0
 rotation = -1.5708
 script = ExtResource("1_vid82")
 
-[node name="Player Sprite2D" type="Sprite2D" parent="."]
-position = Vector2(0, -0.5)
-rotation = 1.5708
-scale = Vector2(0.460938, 0.171875)
-texture = ExtResource("2_bfy5g")
-
-[node name="Health" type="Node2D" parent="."]
-script = ExtResource("3_s6xvg")
-health = null
-
-[node name="SmallHitParticles" type="CPUParticles2D" parent="Health"]
-emitting = false
-amount = 10
-lifetime = 0.3
-one_shot = true
-explosiveness = 1.0
-randomness = 0.3
-lifetime_randomness = 0.3
-emission_shape = 3
-emission_rect_extents = Vector2(1, 1)
-gravity = Vector2(0, 0)
-initial_velocity_min = 20.0
-initial_velocity_max = 75.0
-
-[node name="LargeHitPartciles" type="CPUParticles2D" parent="Health"]
-emitting = false
-amount = 20
-lifetime = 0.3
-explosiveness = 1.0
-randomness = 0.3
-lifetime_randomness = 0.3
-direction = Vector2(0, 0)
-spread = 90.0
-gravity = Vector2(0, 0)
-initial_velocity_min = 30.0
-initial_velocity_max = 150.0
-
 [node name="ServerSynchronizer" type="MultiplayerSynchronizer" parent="."]
 replication_config = SubResource("SceneReplicationConfig_fii6g")
-public_visibility = false
 
 [node name="PlayerInput" type="MultiplayerSynchronizer" parent="."]
 root_path = NodePath(".")
 replication_config = SubResource("SceneReplicationConfig_ms0hk")
 script = ExtResource("4_3clxj")
+
+[node name="Player Sprite2D" type="Sprite2D" parent="."]
+position = Vector2(0, -0.5)
+rotation = 1.5708
+scale = Vector2(0.460938, 0.171875)
+texture = ExtResource("2_bfy5g")
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="."]
 shape = SubResource("CapsuleShape2D_wj45g")
@@ -95,8 +62,8 @@ shape = SubResource("CapsuleShape2D_wj45g")
 rotation = -1.5708
 angle_deg = 90
 ray_count = 50
-max_distance = 1000.0
 collision_layer_mask = 1
+debug_lines = true
 
 [node name="RayCast2D" type="RayCast2D" parent="."]
 rotation = -1.5708
