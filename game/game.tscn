@@ -1,8 +1,7 @@
-[gd_scene load_steps=4 format=3 uid="uid://ig82qvja135b"]
+[gd_scene load_steps=3 format=3 uid="uid://ig82qvja135b"]
 
 [ext_resource type="Script" path="res://game/game.gd" id="1_irq42"]
 [ext_resource type="PackedScene" uid="uid://cev2pvlm8tegn" path="res://ui/connect_to_lobby/connect_to_lobby.tscn" id="2_ginb4"]
-[ext_resource type="Texture2D" uid="uid://ck4jd04bqx7k0" path="res://ui/connect_to_lobby/sad_val.png" id="3_eiwhi"]
 
 [node name="Game" type="Node2D"]
 script = ExtResource("1_irq42")
@@ -19,26 +18,13 @@ anchors_preset = 5
 anchor_left = 0.5
 anchor_right = 0.5
 anchor_bottom = 0.0
-offset_left = 575.0
+offset_left = 645.0
 offset_top = 18.0
-offset_right = 575.0
+offset_right = 645.0
 offset_bottom = 18.0
 grow_vertical = 1
+size_flags_horizontal = 3
 size_flags_vertical = 3
-
-[node name="TextureRect" type="TextureRect" parent="ConnectToLobbyUI"]
-layout_mode = 1
-anchors_preset = 5
-anchor_left = 0.5
-anchor_right = 0.5
-offset_left = -512.0
-offset_top = -100.925
-offset_right = 512.0
-offset_bottom = 923.075
-grow_horizontal = 2
-scale = Vector2(0.37, 0.37)
-pivot_offset = Vector2(534.884, 483.721)
-texture = ExtResource("3_eiwhi")
 
 [connection signal="pressed" from="ConnectToLobbyUI/Net/Options/Host" to="." method="_on_host_pressed"]
 [connection signal="pressed" from="ConnectToLobbyUI/Net/Options/Connect" to="." method="_on_connect_pressed"]
