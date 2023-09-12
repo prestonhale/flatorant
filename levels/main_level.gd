@@ -35,6 +35,28 @@ func add_player(id: int):
 	$Players.add_child(character, true)
 	character.hit_something.connect(_on_player_hit_something)
 	
+	# These lambda make sure that _on_vision_cone_body_entered etc. ALSO 
+	# get the character
+	character.vision_cone_area.body_entered.connect(
+		func(other_player: Node2D): _on_vision_cone_body_entered(character, other_player)
+	)
+	character.vision_cone_area.body_exited.connect(
+		func(other_player: Node2D): _on_vision_cone_body_exited(character, other_player)
+	)
+	
+# Make the entering player visible to this player
+func _on_vision_cone_body_entered(player: Player, other_player: Node2D):
+	other_player = other_player as Player
+#	print("Enter %s" % other_player.player)
+	other_player.set_visible_to(player.player)
+
+
+# Make the exiting player invisible to this player
+func _on_vision_cone_body_exited(player: Player, other_player: Node2D):
+	other_player = other_player as Player
+#	print("Exit %s" % other_player.player)
+	other_player.set_invisible_to(player.player)
+
 func del_player(id: int):
 	if not $Players.has_node(str(id)):
 		return

@@ -8,6 +8,8 @@ const SPEED = 400
 
 @onready var ray = $RayCast2D 
 @onready var input = $PlayerInput
+@onready var vision_cone_area = $VisionCone2D/VisionConeArea
+@onready var server_synchronizer = $ServerSynchronizer
 
 @export var player := 1 :
 	set(id):
@@ -48,6 +50,12 @@ func _process(delta):
 		
 	move_and_slide()
 
+func set_visible_to(opponent_id: int):
+	server_synchronizer.set_visibility_for(opponent_id, true)
+
+func set_invisible_to(opponent_id: int):
+	server_synchronizer.set_visibility_for(opponent_id, false)
+	
 
 
 
