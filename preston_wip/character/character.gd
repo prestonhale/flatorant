@@ -10,6 +10,7 @@ const SPEED = 400
 @onready var input = $PlayerInput
 @onready var vision_cone_area = $VisionCone2D/VisionConeArea
 @onready var server_synchronizer = $ServerSynchronizer
+@onready var health = $Health
 
 @export var player := 1 :
 	set(id):
@@ -25,14 +26,19 @@ func _ready():
 	# This check is just "do we control this player's input" aka "is it us"
 	if input.get_multiplayer_authority() != multiplayer.get_unique_id():
 		$VisionCone2D.hide()
+
+func take_hit():
+	health.take_damage(Health.DamageLocation.shoulder)
 	
 func _process(delta):
 	if input.fired:
-		print("fired")
-		if ray.is_colliding():
-			print("colliding")
-			var hitspot = ray.get_collision_point()
-			hit_something.emit(global_position, hitspot)
+		var collision = ray.get_collider()
+		if collision:
+			print(collision)
+			# TODO: More damage for headshot
+			if collision.name == "Torso" or collision.name == "Head":
+				var player = collision.owner as Player
+				player.take_hit()
 	
 	look_at(input.mouse_position)
 	
@@ -49,6 +55,27 @@ func _process(delta):
 		velocity.y = 0
 		
 	move_and_slide()
+
+func get_root_parent(node):
+	# Recursive function to get the root parent of a node
+	if node.get_parent():
+		return get_root_parent(node.get_parent())
+	return node
+
+func _cast_segment():
+	var space_state = get_world_2d().get_direct_space_state()
+
+	var segment = SegmentShape2D.new()
+	segment.set_a(global_position)
+	segment.set_b(global_position + Vector2(cos(rotation), sin(rotation)) * 1000)
+	
+	var query = PhysicsShapeQueryParameters2D.new()
+	query.set_shape(segment)
+	query.set_exclude([self]) # If you want to exclude the object casting the segment
+	query.collision_mask = 1 # Set the collision mask you want, or none if you want to hit anything
+	
+	var hits = space_state.intersect_shape(query, 32)
+	return hits
 
 func set_visible_to(opponent_id: int):
 	server_synchronizer.set_visibility_for(opponent_id, true)

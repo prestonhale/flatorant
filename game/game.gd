@@ -10,8 +10,7 @@ func _ready():
 	if DisplayServer.get_name() == "headless":
 		print("Automatically starting dedicated server.")
 		_on_host_pressed.call_deferred()
-		
-
+	
 func _on_host_pressed():
 	var peer = ENetMultiplayerPeer.new()
 	peer.create_server(PORT)
@@ -42,7 +41,6 @@ func start_game():
 	if multiplayer.is_server():
 		change_level.call_deferred(load("res://levels/main_level.tscn"))
 
-
 # Call this function deferred and only on the main authority (server).
 func change_level(scene: PackedScene):
 	# Remove old level if any.
@@ -52,7 +50,6 @@ func change_level(scene: PackedScene):
 		c.queue_free()
 	# Add new level.
 	level.add_child(scene.instantiate())
-
 
 # The server can restart the level by pressing Home.
 func _input(event):

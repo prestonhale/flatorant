@@ -1,4 +1,4 @@
-[gd_scene load_steps=9 format=3 uid="uid://dp8t0836j5usl"]
+[gd_scene load_steps=11 format=3 uid="uid://dp8t0836j5usl"]
 
 [ext_resource type="Script" path="res://preston_wip/character/character.gd" id="1_vid82"]
 [ext_resource type="Texture2D" uid="uid://dd4bha17t0n6s" path="res://icon.svg" id="2_bfy5g"]
@@ -34,12 +34,17 @@ properties/2/spawn = true
 properties/2/sync = true
 properties/2/watch = false
 
-[sub_resource type="CapsuleShape2D" id="CapsuleShape2D_wj45g"]
-radius = 9.0
-height = 54.0
+[sub_resource type="CapsuleShape2D" id="CapsuleShape2D_aqjv4"]
+height = 58.0
+
+[sub_resource type="CapsuleShape2D" id="CapsuleShape2D_tf64w"]
+radius = 6.99345
+height = 15.9868
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_27kt3"]
 
 [node name="Player" type="CharacterBody2D"]
-rotation = -1.5708
+rotation = -1.57667
 script = ExtResource("1_vid82")
 
 [node name="Player Sprite2D" type="Sprite2D" parent="."]
@@ -50,11 +55,10 @@ texture = ExtResource("2_bfy5g")
 
 [node name="Health" type="Node2D" parent="."]
 script = ExtResource("3_s6xvg")
-health = null
 
 [node name="SmallHitParticles" type="CPUParticles2D" parent="Health"]
 emitting = false
-amount = 10
+amount = 15
 lifetime = 0.3
 one_shot = true
 explosiveness = 1.0
@@ -63,8 +67,11 @@ lifetime_randomness = 0.3
 emission_shape = 3
 emission_rect_extents = Vector2(1, 1)
 gravity = Vector2(0, 0)
-initial_velocity_min = 20.0
-initial_velocity_max = 75.0
+initial_velocity_min = 30.0
+initial_velocity_max = 100.0
+scale_amount_min = 4.0
+scale_amount_max = 4.0
+color = Color(0.968627, 0, 0.215686, 1)
 
 [node name="LargeHitPartciles" type="CPUParticles2D" parent="Health"]
 emitting = false
@@ -88,9 +95,6 @@ root_path = NodePath(".")
 replication_config = SubResource("SceneReplicationConfig_ms0hk")
 script = ExtResource("4_3clxj")
 
-[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
-shape = SubResource("CapsuleShape2D_wj45g")
-
 [node name="VisionCone2D" parent="." instance=ExtResource("3_lt0ua")]
 rotation = -1.5708
 angle_deg = 90
@@ -101,5 +105,28 @@ collision_layer_mask = 1
 [node name="RayCast2D" type="RayCast2D" parent="."]
 rotation = -1.5708
 target_position = Vector2(0, 1000)
-collision_mask = 14
+collision_mask = 3
 collide_with_areas = true
+
+[node name="Collision" type="Node2D" parent="."]
+
+[node name="Torso" type="StaticBody2D" parent="."]
+collision_layer = 2
+collision_mask = 2
+
+[node name="TorsoShape" type="CollisionShape2D" parent="Torso"]
+visible = false
+rotation = 0.00241721
+shape = SubResource("CapsuleShape2D_aqjv4")
+
+[node name="Head" type="StaticBody2D" parent="."]
+collision_layer = 2
+collision_mask = 2
+
+[node name="HeadShape" type="CollisionShape2D" parent="Head"]
+visible = false
+rotation = -0.000538441
+shape = SubResource("CapsuleShape2D_tf64w")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+shape = SubResource("RectangleShape2D_27kt3")
