@@ -4,7 +4,7 @@ var character_location
 
 func _draw():
 	if hitspot:
-		draw_circle(to_local(hitspot), 10, Color.RED)
+		draw_circle(to_local(hitspot), 10, Color.ORANGE)
 		draw_line(to_local(character_location), to_local(hitspot), Color.RED, 2)
 #		get_tree.timer
 

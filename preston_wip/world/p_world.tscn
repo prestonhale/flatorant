@@ -1,7 +1,7 @@
 [gd_scene load_steps=3 format=3 uid="uid://iuqtwc3wp4mp"]
 
 [ext_resource type="PackedScene" uid="uid://cfb1ot1iym63" path="res://preston_wip/character/character.tscn" id="1_5l8ep"]
-[ext_resource type="TileSet" uid="uid://jhxowywlfj7i" path="res://tiles/hi-rest-tiles.tres" id="2_ot3bp"]
+[ext_resource type="TileSet" uid="uid://cdewitph8rjjp" path="res://tiles/hi-rest-tiles.tres" id="2_ot3bp"]
 
 [node name="p_world" type="Node2D"]
 position = Vector2(-2, 0)
