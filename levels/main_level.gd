@@ -34,6 +34,7 @@ func add_player(id: int):
 	character.name = str(id)
 	$Players.add_child(character, true)
 	character.hit_something.connect(_on_player_hit_something)
+	character.fired_shot.connect(_on_character_fired_shot)
 	
 	# These lambda make sure that _on_vision_cone_body_entered etc. ALSO 
 	# get the character
@@ -61,6 +62,10 @@ func del_player(id: int):
 	if not $Players.has_node(str(id)):
 		return
 	$Players.get_node(str(id)).queue_free()
+
+# Players produce the "shots" but the world will track them
+func _on_character_fired_shot(bullet):
+	add_child(bullet)
 
 func _on_player_hit_something(global_player_pos: Vector2, hitspot: Vector2):
 	debug_drawer.draw_hit(hitspot, global_player_pos)

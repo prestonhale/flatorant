@@ -1,0 +1,13 @@
+[gd_scene load_steps=2 format=3 uid="uid://dowtaon11tgrc"]
+
+[ext_resource type="Script" path="res://player/bullet/bullet.gd" id="1_o8cwk"]
+
+[node name="Line2D" type="Line2D"]
+width = 2.0
+default_color = Color(0.945098, 0.8, 0.235294, 1)
+script = ExtResource("1_o8cwk")
+
+[node name="Timer" type="Timer" parent="."]
+wait_time = 0.1
+one_shot = true
+autostart = true

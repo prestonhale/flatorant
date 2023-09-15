@@ -1,10 +1,11 @@
-[gd_scene load_steps=11 format=3 uid="uid://dp8t0836j5usl"]
+[gd_scene load_steps=12 format=3 uid="uid://dp8t0836j5usl"]
 
 [ext_resource type="Script" path="res://preston_wip/character/character.gd" id="1_vid82"]
 [ext_resource type="Texture2D" uid="uid://dd4bha17t0n6s" path="res://icon.svg" id="2_bfy5g"]
 [ext_resource type="PackedScene" uid="uid://kf8tqdlm8c5t" path="res://addons/vision_cone_2d/vision_cone_2d_template.tscn" id="3_lt0ua"]
 [ext_resource type="Script" path="res://player/health.gd" id="3_s6xvg"]
 [ext_resource type="Script" path="res://player/player_input.gd" id="4_3clxj"]
+[ext_resource type="Script" path="res://player/gun.gd" id="6_t530w"]
 
 [sub_resource type="SceneReplicationConfig" id="SceneReplicationConfig_fii6g"]
 properties/0/path = NodePath(".:player")
@@ -98,9 +99,11 @@ script = ExtResource("4_3clxj")
 [node name="VisionCone2D" parent="." instance=ExtResource("3_lt0ua")]
 rotation = -1.5708
 angle_deg = 90
-ray_count = 50
+ray_count = 10
 max_distance = 1000.0
 collision_layer_mask = 1
+debug_lines = true
+debug_shape = true
 
 [node name="RayCast2D" type="RayCast2D" parent="."]
 rotation = -1.5708
@@ -130,3 +133,6 @@ shape = SubResource("CapsuleShape2D_tf64w")
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="."]
 shape = SubResource("RectangleShape2D_27kt3")
+
+[node name="Gun" type="Node2D" parent="."]
+script = ExtResource("6_t530w")

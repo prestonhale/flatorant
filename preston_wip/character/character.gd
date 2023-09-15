@@ -3,6 +3,7 @@ extends CharacterBody2D
 class_name Player
 
 signal hit_something 
+signal fired_shot
 
 const SPEED = 400
 
@@ -11,6 +12,7 @@ const SPEED = 400
 @onready var vision_cone_area = $VisionCone2D/VisionConeArea
 @onready var server_synchronizer = $ServerSynchronizer
 @onready var health = $Health
+@onready var gun = $Gun
 
 @export var player := 1 :
 	set(id):
@@ -33,6 +35,9 @@ func take_hit():
 func _process(delta):
 	if input.fired:
 		var collision = ray.get_collider()
+		var shot_pos = ray.get_collision_point()
+		var bullet = gun.shoot(shot_pos)
+		fired_shot.emit(bullet)
 		if collision:
 			print(collision)
 			# TODO: More damage for headshot
@@ -61,21 +66,6 @@ func get_root_parent(node):
 	if node.get_parent():
 		return get_root_parent(node.get_parent())
 	return node
-
-func _cast_segment():
-	var space_state = get_world_2d().get_direct_space_state()
-
-	var segment = SegmentShape2D.new()
-	segment.set_a(global_position)
-	segment.set_b(global_position + Vector2(cos(rotation), sin(rotation)) * 1000)
-	
-	var query = PhysicsShapeQueryParameters2D.new()
-	query.set_shape(segment)
-	query.set_exclude([self]) # If you want to exclude the object casting the segment
-	query.collision_mask = 1 # Set the collision mask you want, or none if you want to hit anything
-	
-	var hits = space_state.intersect_shape(query, 32)
-	return hits
 
 func set_visible_to(opponent_id: int):
 	server_synchronizer.set_visibility_for(opponent_id, true)
