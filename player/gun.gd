@@ -1,10 +1,16 @@
 extends Node2D
 
-var bullet_scn = preload("res://player/bullet/bullet.tscn")
+@onready var ray = $RayCast2D
 
-func shoot(shot_pos: Vector2):
-	var bullet = bullet_scn.instantiate()
-	bullet.add_point(global_position)
-	bullet.add_point(shot_pos)
-	return bullet
+var bullet_scn = preload("res://player/shot/shot.tscn")
+
+func shoot() -> Vector2:
+	var collision = ray.get_collider()
+	var shot_pos = ray.get_collision_point()
+	if collision:
+		# TODO: More damage for headshot
+		if collision.name == "Torso" or collision.name == "Head":
+			var player = collision.owner as Player
+			player.take_hit.rpc(shot_pos)
+	return shot_pos
 	

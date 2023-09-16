@@ -2,12 +2,12 @@ extends CharacterBody2D
 
 class_name Player
 
-signal hit_something 
 signal fired_shot
+
 
 const SPEED = 400
 
-@onready var ray = $RayCast2D 
+
 @onready var input = $PlayerInput
 @onready var vision_cone_area = $VisionCone2D/VisionConeArea
 @onready var server_synchronizer = $ServerSynchronizer
@@ -23,27 +23,20 @@ const SPEED = 400
 
 var debug_draw = false
 
-func _ready():
+#func _ready():
 	# Hide vision cone this isn't "us".
 	# This check is just "do we control this player's input" aka "is it us"
-	if input.get_multiplayer_authority() != multiplayer.get_unique_id():
-		$VisionCone2D.hide()
+#	if input.get_multiplayer_authority() != multiplayer.get_unique_id():
+#		$VisionCone2D.hide()
 
-func take_hit():
-	health.take_damage(Health.DamageLocation.shoulder)
+@rpc("call_local")
+func take_hit(hit_pos):
+	health.take_damage(hit_pos, Health.DamageLocation.shoulder)
 	
 func _process(delta):
 	if input.fired:
-		var collision = ray.get_collider()
-		var shot_pos = ray.get_collision_point()
-		var bullet = gun.shoot(shot_pos)
-		fired_shot.emit(bullet)
-		if collision:
-			print(collision)
-			# TODO: More damage for headshot
-			if collision.name == "Torso" or collision.name == "Head":
-				var player = collision.owner as Player
-				player.take_hit()
+		var pos_shot = gun.shoot()
+		fired_shot.emit(position, pos_shot)
 	
 	look_at(input.mouse_position)
 	

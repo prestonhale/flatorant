@@ -25,6 +25,6 @@ position = Vector2(492, 336)
 [node name="DebugDrawer" parent="." instance=ExtResource("3_vdryc")]
 
 [node name="RayCast2D" type="RayCast2D" parent="."]
-target_position = Vector2(0, 0)
+exclude_parent = false
 collision_mask = 4
 collide_with_areas = true
