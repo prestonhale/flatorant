@@ -69,6 +69,9 @@ func get_root_parent(node):
 		return get_root_parent(node.get_parent())
 	return node
 
+func change_color(color: Color):
+	pass
+
 func set_visible_to(opponent_id: int):
 	server_synchronizer.set_visibility_for(opponent_id, true)
 

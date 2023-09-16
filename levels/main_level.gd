@@ -10,6 +10,15 @@ var shot_scn = preload("res://player/shot/shot.tscn")
 @onready var camera = $Camera2D
 var current_character
 
+var PLAYER_COLORS = [
+	Color.RED,
+	Color.GREEN,
+	Color.BLUE,
+	Color.PURPLE,
+	Color.ORANGE,
+	Color.YELLOW
+]
+
 
 var circle_pos = Vector2.ZERO
 var line_pos_a = Vector2.ZERO
@@ -45,6 +54,9 @@ func add_player(id: int):
 	character.name = str(id)
 	$Players.add_child(character, true)
 	character.fired_shot.connect(_on_character_fired_shot)
+	
+	var player_number = $Players.get_child_count() - 1
+	character.change_color(PLAYER_COLORS[player_number])
 	
 	# These lambda make sure that _on_vision_cone_body_entered etc. ALSO 
 	# get the character
