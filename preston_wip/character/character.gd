@@ -26,10 +26,10 @@ var debug_draw = false
 func _ready():
 	# Hide vision cone this isn't "us".
 	# This check is just "do we control this player's input" aka "is it us"
-#	if input.get_multiplayer_authority() != multiplayer.get_unique_id():
-#		$VisionCone2D.hide()
 	if is_current_player():
 		add_child(Camera2D.new())
+	else:
+		$VisionCone2D.hide()
 
 func is_current_player() -> bool:
 	return input.get_multiplayer_authority() == multiplayer.get_unique_id()
@@ -41,10 +41,12 @@ func take_hit(hit_pos):
 	
 func _process(delta):
 	if input.fired:
-		print("shoot")
 		var pos_shot = gun.shoot()
 		fired_shot.emit(position, pos_shot)
-	input.mouse_position = get_global_mouse_position()
+	
+	if is_current_player():
+		input.mouse_position = get_global_mouse_position()
+		
 	look_at(input.mouse_position)
 	
 	# Get the input from the multiplayer synchronizer and apply it
@@ -58,7 +60,7 @@ func _process(delta):
 	else:
 		velocity.x = 0
 		velocity.y = 0
-		
+
 	move_and_slide()
 
 func get_root_parent(node):

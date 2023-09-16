@@ -10,7 +10,7 @@
 
 [sub_resource type="SceneReplicationConfig" id="SceneReplicationConfig_fii6g"]
 properties/0/path = NodePath(".:player")
-properties/0/spawn = false
+properties/0/spawn = true
 properties/0/sync = true
 properties/0/watch = false
 properties/1/path = NodePath(".:position")
