@@ -10,7 +10,7 @@
 
 [sub_resource type="SceneReplicationConfig" id="SceneReplicationConfig_fii6g"]
 properties/0/path = NodePath(".:player")
-properties/0/spawn = false
+properties/0/spawn = true
 properties/0/sync = true
 properties/0/watch = false
 properties/1/path = NodePath(".:position")
@@ -91,6 +91,7 @@ initial_velocity_max = 150.0
 
 [node name="ServerSynchronizer" type="MultiplayerSynchronizer" parent="."]
 replication_config = SubResource("SceneReplicationConfig_fii6g")
+public_visibility = false
 
 [node name="PlayerInput" type="MultiplayerSynchronizer" parent="."]
 root_path = NodePath(".")
@@ -106,7 +107,7 @@ collision_layer_mask = 8
 debug_shape = true
 
 [node name="VisionConeArea" parent="VisionCone2D" index="1"]
-collision_layer = 4
+collision_layer = 15
 collision_mask = 0
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="."]
@@ -118,7 +119,7 @@ script = ExtResource("6_t530w")
 
 [node name="RayCast2D" type="RayCast2D" parent="Gun"]
 rotation = -1.5708
-target_position = Vector2(0, 2000)
+target_position = Vector2(0, 1000)
 collision_mask = 8
 collide_with_areas = true
 
