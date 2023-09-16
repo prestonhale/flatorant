@@ -13,7 +13,7 @@ const SPEED = 400
 @onready var server_synchronizer = $ServerSynchronizer
 @onready var health = $Health
 @onready var gun = $Gun
-@onready var sprite = $"Player Sprite2D"
+@onready var sprite = $PlayerSprite2D
 
 @export var player := 1 :
 	set(id):
