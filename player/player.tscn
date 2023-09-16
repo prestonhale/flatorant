@@ -1,10 +1,12 @@
-[gd_scene load_steps=11 format=3 uid="uid://dp8t0836j5usl"]
+[gd_scene load_steps=13 format=3 uid="uid://dp8t0836j5usl"]
 
 [ext_resource type="Script" path="res://preston_wip/character/character.gd" id="1_vid82"]
 [ext_resource type="Texture2D" uid="uid://dd4bha17t0n6s" path="res://icon.svg" id="2_bfy5g"]
 [ext_resource type="PackedScene" uid="uid://kf8tqdlm8c5t" path="res://addons/vision_cone_2d/vision_cone_2d_template.tscn" id="3_lt0ua"]
 [ext_resource type="Script" path="res://player/health.gd" id="3_s6xvg"]
 [ext_resource type="Script" path="res://player/player_input.gd" id="4_3clxj"]
+[ext_resource type="Script" path="res://player/gun.gd" id="6_t530w"]
+[ext_resource type="PackedScene" uid="uid://dowtaon11tgrc" path="res://player/shot/shot.tscn" id="7_rpke0"]
 
 [sub_resource type="SceneReplicationConfig" id="SceneReplicationConfig_fii6g"]
 properties/0/path = NodePath(".:player")
@@ -22,7 +24,7 @@ properties/2/watch = false
 
 [sub_resource type="SceneReplicationConfig" id="SceneReplicationConfig_ms0hk"]
 properties/0/path = NodePath(".:direction")
-properties/0/spawn = false
+properties/0/spawn = true
 properties/0/sync = true
 properties/0/watch = false
 properties/1/path = NodePath(".:mouse_position")
@@ -34,17 +36,19 @@ properties/2/spawn = true
 properties/2/sync = true
 properties/2/watch = false
 
-[sub_resource type="CapsuleShape2D" id="CapsuleShape2D_aqjv4"]
-height = 58.0
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_27kt3"]
+size = Vector2(20, 56.999)
 
 [sub_resource type="CapsuleShape2D" id="CapsuleShape2D_tf64w"]
 radius = 6.99345
-height = 15.9868
+height = 19.9996
 
-[sub_resource type="RectangleShape2D" id="RectangleShape2D_27kt3"]
+[sub_resource type="CapsuleShape2D" id="CapsuleShape2D_aqjv4"]
+height = 58.0
 
 [node name="Player" type="CharacterBody2D"]
 rotation = -1.57667
+collision_mask = 8
 script = ExtResource("1_vid82")
 
 [node name="Player Sprite2D" type="Sprite2D" parent="."]
@@ -99,34 +103,46 @@ script = ExtResource("4_3clxj")
 rotation = -1.5708
 angle_deg = 90
 ray_count = 50
-max_distance = 1000.0
-collision_layer_mask = 1
+max_distance = 250.0
+collision_layer_mask = 8
+debug_lines = true
 
-[node name="RayCast2D" type="RayCast2D" parent="."]
+[node name="VisionConeArea" parent="VisionCone2D" index="1"]
+collision_layer = 15
+collision_mask = 0
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+position = Vector2(3.0268e-09, -0.499993)
+shape = SubResource("RectangleShape2D_27kt3")
+
+[node name="Gun" type="Node2D" parent="."]
+script = ExtResource("6_t530w")
+
+[node name="RayCast2D" type="RayCast2D" parent="Gun"]
 rotation = -1.5708
 target_position = Vector2(0, 1000)
-collision_mask = 3
+collision_mask = 8
 collide_with_areas = true
+
+[node name="Line2D" parent="Gun" instance=ExtResource("7_rpke0")]
 
 [node name="Collision" type="Node2D" parent="."]
 
-[node name="Torso" type="StaticBody2D" parent="."]
-collision_layer = 2
-collision_mask = 2
-
-[node name="TorsoShape" type="CollisionShape2D" parent="Torso"]
-visible = false
-rotation = 0.00241721
-shape = SubResource("CapsuleShape2D_aqjv4")
-
 [node name="Head" type="StaticBody2D" parent="."]
 collision_layer = 2
-collision_mask = 2
+collision_mask = 0
 
 [node name="HeadShape" type="CollisionShape2D" parent="Head"]
-visible = false
 rotation = -0.000538441
 shape = SubResource("CapsuleShape2D_tf64w")
 
-[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
-shape = SubResource("RectangleShape2D_27kt3")
+[node name="Torso" type="StaticBody2D" parent="."]
+collision_layer = 2
+collision_mask = 0
+
+[node name="TorsoShape" type="CollisionShape2D" parent="Torso"]
+rotation = 0.00241721
+shape = SubResource("CapsuleShape2D_aqjv4")
+debug_color = Color(0.631373, 0.027451, 0.372549, 0.419608)
+
+[editable path="VisionCone2D"]

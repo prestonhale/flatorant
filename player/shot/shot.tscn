@@ -1,0 +1,13 @@
+[gd_scene load_steps=2 format=3 uid="uid://dowtaon11tgrc"]
+
+[ext_resource type="Script" path="res://player/shot/shot.gd" id="1_3j4v7"]
+
+[node name="Line2D" type="Line2D"]
+width = 5.0
+default_color = Color(0.945098, 0.8, 0.235294, 1)
+script = ExtResource("1_3j4v7")
+
+[node name="Timer" type="Timer" parent="."]
+wait_time = 2.0
+one_shot = true
+autostart = true

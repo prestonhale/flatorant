@@ -2,15 +2,17 @@ extends CharacterBody2D
 
 class_name Player
 
-signal hit_something 
+signal fired_shot
+
 
 const SPEED = 400
 
-@onready var ray = $RayCast2D 
+
 @onready var input = $PlayerInput
 @onready var vision_cone_area = $VisionCone2D/VisionConeArea
 @onready var server_synchronizer = $ServerSynchronizer
 @onready var health = $Health
+@onready var gun = $Gun
 
 @export var player := 1 :
 	set(id):
@@ -21,24 +23,20 @@ const SPEED = 400
 
 var debug_draw = false
 
-func _ready():
+#func _ready():
 	# Hide vision cone this isn't "us".
 	# This check is just "do we control this player's input" aka "is it us"
-	if input.get_multiplayer_authority() != multiplayer.get_unique_id():
-		$VisionCone2D.hide()
+#	if input.get_multiplayer_authority() != multiplayer.get_unique_id():
+#		$VisionCone2D.hide()
 
-func take_hit():
-	health.take_damage(Health.DamageLocation.shoulder)
+@rpc("call_local")
+func take_hit(hit_pos):
+	health.take_damage(hit_pos, Health.DamageLocation.shoulder)
 	
 func _process(delta):
 	if input.fired:
-		var collision = ray.get_collider()
-		if collision:
-			print(collision)
-			# TODO: More damage for headshot
-			if collision.name == "Torso" or collision.name == "Head":
-				var player = collision.owner as Player
-				player.take_hit()
+		var pos_shot = gun.shoot()
+		fired_shot.emit(position, pos_shot)
 	
 	look_at(input.mouse_position)
 	
@@ -61,21 +59,6 @@ func get_root_parent(node):
 	if node.get_parent():
 		return get_root_parent(node.get_parent())
 	return node
-
-func _cast_segment():
-	var space_state = get_world_2d().get_direct_space_state()
-
-	var segment = SegmentShape2D.new()
-	segment.set_a(global_position)
-	segment.set_b(global_position + Vector2(cos(rotation), sin(rotation)) * 1000)
-	
-	var query = PhysicsShapeQueryParameters2D.new()
-	query.set_shape(segment)
-	query.set_exclude([self]) # If you want to exclude the object casting the segment
-	query.collision_mask = 1 # Set the collision mask you want, or none if you want to hit anything
-	
-	var hits = space_state.intersect_shape(query, 32)
-	return hits
 
 func set_visible_to(opponent_id: int):
 	server_synchronizer.set_visibility_for(opponent_id, true)

@@ -46,5 +46,6 @@ fire={
 [layer_names]
 
 2d_physics/layer_1="Player"
-2d_physics/layer_2="Target"
-2d_physics/layer_4="Environment"
+2d_physics/layer_2="Bullets"
+2d_physics/layer_3="Vision Cones"
+2d_physics/layer_4="Walls"

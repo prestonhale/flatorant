@@ -16,7 +16,8 @@ const HEAD_DMG = 100
 
 signal died
 
-func take_damage(dmg_location: DamageLocation):
+func take_damage(hit_pos: Vector2, dmg_location: DamageLocation):
+	small_particles.position = to_local(hit_pos)
 	small_particles.restart()
 	small_particles.emitting = true
 	
