@@ -8,6 +8,10 @@ var shot_scn = preload("res://player/shot/shot.tscn")
 @onready var debug_drawer = $DebugDrawer
 @onready var ray: RayCast2D = $RayCast2D
 
+var circle_pos = Vector2.ZERO
+var line_pos_a = Vector2.ZERO
+var line_pos_b = Vector2.ZERO
+
 # Called when the node enters the scene tree for the first time.
 func _ready():
 	if not multiplayer.is_server():
@@ -61,12 +65,23 @@ func _on_vision_cone_body_exited(player: Player, other_player: Node2D):
 	other_player.set_invisible_to(player.player)
 
 func _on_character_fired_shot(player_pos: Vector2, shot_pos: Vector2):
-	print("shoot")
-	# Cast rays to get entry and exit points of all view cones it passes through
+	# Cast rays to get entry aand exit points of all view cones it passes through
 	var cones = {} # PlayerId -> [EntryVec, ExitVec]
 	var points = []
 	
-	debug_print(ray.position, ray.target_position)
+	ray.position = shot_pos
+	ray.target_position = player_pos - shot_pos
+	ray.force_raycast_update()
+#	line_pos_a = ray.position
+#	line_pos_b = ray.target_position
+	print(shot_pos)
+	queue_redraw()
+	debug_print(ray.position, ray.position + ray.target_position)
+	if ray.is_colliding():
+		circle_pos = ray.get_collision_point()
+		print(ray.get_collider())
+		print(to_local(ray.get_collision_point()))
+		print(ray.get_collision_point())
 
 	# Raycast "forwards" through all the vision cones until we hit a wall. 
 	# This gives a dict of Collider -> [EntryPoint]
@@ -127,6 +142,12 @@ func _draw_shot_tracer(player_pos: Vector2, shot_pos: Vector2):
 	shot.add_point(player_pos)
 	shot.add_point(shot_pos)
 	add_child(shot)
+	
+
+func _draw():
+	print("draw")
+	draw_circle(circle_pos, 10, Color.RED)
+	draw_line(line_pos_a, line_pos_b, Color.YELLOW_GREEN, 2)
 	
 
 func del_player(id: int):

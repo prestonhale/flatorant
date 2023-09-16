@@ -35,6 +35,7 @@ func take_hit(hit_pos):
 	
 func _process(delta):
 	if input.fired:
+		print("shoot")
 		var pos_shot = gun.shoot()
 		fired_shot.emit(position, pos_shot)
 	
