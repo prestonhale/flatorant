@@ -51,7 +51,7 @@ rotation = -1.57667
 collision_mask = 8
 script = ExtResource("1_vid82")
 
-[node name="Player Sprite2D" type="Sprite2D" parent="."]
+[node name="PlayerSprite2D" type="Sprite2D" parent="."]
 position = Vector2(0, -0.5)
 rotation = 1.5708
 scale = Vector2(0.460938, 0.171875)
