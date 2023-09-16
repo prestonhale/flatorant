@@ -58,13 +58,13 @@ func add_player(id: int):
 # Make the entering player visible to this player
 func _on_vision_cone_body_entered(player: Player, other_player: Node2D):
 	other_player = other_player as Player
-#	print("Enter %s" % other_player.player)
+	print("Enter %s" % other_player.player)
 	other_player.set_visible_to(player.player)
 
 # Make the exiting player invisible to this player
 func _on_vision_cone_body_exited(player: Player, other_player: Node2D):
 	other_player = other_player as Player
-#	print("Exit %s" % other_player.player)
+	print("Exit %s" % other_player.player)
 	other_player.set_invisible_to(player.player)
 
 func _on_character_fired_shot(player_pos: Vector2, shot_pos: Vector2):
@@ -77,14 +77,14 @@ func _on_character_fired_shot(player_pos: Vector2, shot_pos: Vector2):
 	ray.force_raycast_update()
 #	line_pos_a = ray.position
 #	line_pos_b = ray.target_position
-	print(shot_pos)
+#	print(shot_pos)
 	queue_redraw()
 	debug_print(ray.position, ray.position + ray.target_position)
 	if ray.is_colliding():
 		circle_pos = ray.get_collision_point()
-		print(ray.get_collider())
-		print(to_local(ray.get_collision_point()))
-		print(ray.get_collision_point())
+#		print(ray.get_collider())
+#		print(to_local(ray.get_collision_point()))
+#		print(ray.get_collision_point())
 
 	# Raycast "forwards" through all the vision cones until we hit a wall. 
 	# This gives a dict of Collider -> [EntryPoint]

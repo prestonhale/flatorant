@@ -91,6 +91,7 @@ initial_velocity_max = 150.0
 
 [node name="ServerSynchronizer" type="MultiplayerSynchronizer" parent="."]
 replication_config = SubResource("SceneReplicationConfig_fii6g")
+public_visibility = false
 
 [node name="PlayerInput" type="MultiplayerSynchronizer" parent="."]
 root_path = NodePath(".")
@@ -107,7 +108,6 @@ debug_shape = true
 
 [node name="VisionConeArea" parent="VisionCone2D" index="1"]
 collision_layer = 4
-collision_mask = 0
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="."]
 position = Vector2(3.0268e-09, -0.499993)
