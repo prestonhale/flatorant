@@ -84,64 +84,42 @@ func _on_character_fired_shot(player_pos: Vector2, shot_pos: Vector2):
 	var cones = {} # PlayerId -> [EntryVec, ExitVec]
 	var points = []
 	
-	_draw_shot_tracer.rpc(player_pos, shot_pos)
+#	_draw_shot_tracer.rpc(player_pos, shot_pos)
 	
-#	ray.position = shot_pos
-#	ray.target_position = player_pos - shos
-#	line_pos_a = ray.position
-#	line_pos_b = ray.target_position
-#	print(shot_pos)
-#	queue_redraw()
-#	debug_print(ray.position, ray.position + ray.target_position)
-#	if ray.is_colliding():
-#		circle_pos = ray.get_collision_point()
-#		print(ray.get_collider())
-#		print(to_local(ray.get_collision_point()))
-#		print(ray.get_collision_point())
-
-	# Raycast "forwards" through all the vision cones until we hit a wall. 
-	# This gives a dict of Collider -> [EntryPoint]
-#	ray.clear_exceptions()
-#	ray.force_raycast_update()
-#	while ray.is_colliding():
-#		var collider = ray.get_collider()
-#		# Don't collide with this thing again when we recast
-#
-#		cones[collider] = [ray.get_collision_point()]
-#
-#		ray.add_exception(collider) # Don't collide with this cone again
-#		ray.force_raycast_update()
+	# Cast ray forwards to get entry points
+	ray.position = player_pos
+	ray.target_position = shot_pos - player_pos
+	ray.force_raycast_update()
+	while ray.is_colliding():
+		print("entry")
+		var collider = ray.get_collider()
+		cones[collider] = [ray.get_collision_point()]
+		ray.add_exception(collider) # Don't hit this cone again
+		ray.force_raycast_update()
 	
-
-	# Now raycast backwards from the shot. If we find a collider
-	# that needs an exit point add it.
-	# Reverse the raycase
-#	ray.position = shot_pos
-#	ray.target_position = to_global(player_pos)
-#	ray.force_raycast_update()
-#	ray.clear_exceptions()
-##	debug_print(ray.position, ray.get_collision_point())
-#	while ray.is_colliding():
-#		var collider = ray.get_collider()
-#		print(collider)
-#		# Don't collide with this thing again when we recast
-#		ray.add_exception(collider)
+	ray.clear_exceptions()
+	
+	# Cast ray backwards to get exit points
+	ray.position = shot_pos
+	ray.target_position = player_pos - shot_pos
+	ray.force_raycast_update()
+	while ray.is_colliding():
+		var collider = ray.get_collider()
+		cones[collider].append(ray.get_collision_point())
+		ray.add_exception(collider) # Don't hit this cone again
+		ray.force_raycast_update()
+	
+	ray.clear_exceptions()
+##
+	print(cones)
+	for c in cones:
+		if cones[c].size() != 2:
+			print("fuck")
 #
-#		if cones.get(collider):
-#			cones[collider].append(ray.get_collision_point())
-#		ray.force_raycast_update()
-#	ray.clear_exceptions()
-#
-#	print(cones)
-#	for c in cones:
-#		if cones[c].size() != 2:
-#			print("fuck")
-#
-#	for c in cones:
-#		var shot = shot_scn.instantiate()
-#		shot.add_point(cones[c][0])
-#		shot.add_point(cones[c][1])
-#		add_child(shot)
+	for c in cones:
+		var p = cones[c]
+		var p_id = c.get_parent().get_parent().player
+		_draw_shot_tracer.rpc_id(p_id, p[0], p[1])
 			
 	# Render rays made up of EntryVec, ExitVec to specific players
 
@@ -152,7 +130,7 @@ func debug_print(a, b):
 	add_child(shot)
 
 
-@rpc("call_local")
+@rpc("call_local", "reliable")
 func _draw_shot_tracer(player_pos: Vector2, shot_pos: Vector2):
 	var shot = shot_scn.instantiate()
 	shot.add_point(player_pos)
@@ -163,7 +141,7 @@ func _draw_shot_tracer(player_pos: Vector2, shot_pos: Vector2):
 func _draw():
 	print("draw")
 	draw_circle(circle_pos, 10, Color.RED)
-	draw_line(line_pos_a, line_pos_b, Color.YELLOW_GREEN, 2)
+#	draw_line(line_pos_a, line_pos_b, Color.YELLOW_GREEN, 2)
 	
 
 func del_player(id: int):

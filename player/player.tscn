@@ -47,7 +47,6 @@ height = 19.9996
 height = 58.0
 
 [node name="Player" type="CharacterBody2D"]
-rotation = -1.57667
 collision_mask = 8
 script = ExtResource("1_vid82")
 
@@ -103,9 +102,8 @@ script = ExtResource("4_3clxj")
 rotation = -1.5708
 angle_deg = 90
 ray_count = 50
-max_distance = 250.0
 collision_layer_mask = 8
-debug_lines = true
+debug_shape = true
 
 [node name="VisionConeArea" parent="VisionCone2D" index="1"]
 collision_layer = 4
@@ -119,8 +117,8 @@ script = ExtResource("6_t530w")
 
 [node name="RayCast2D" type="RayCast2D" parent="Gun"]
 rotation = -1.5708
-target_position = Vector2(0, 1000)
-collision_mask = 8
+target_position = Vector2(0, 2000)
+collision_mask = 10
 collide_with_areas = true
 
 [node name="Line2D" parent="Gun" instance=ExtResource("7_rpke0")]
