@@ -7,7 +7,7 @@ var shot_scn = preload("res://player/shot/shot.tscn")
 @onready var players = $Players
 @onready var debug_drawer = $DebugDrawer
 @onready var ray: RayCast2D = $RayCast2D
-@onready var current_camera = $Camera2D
+@onready var camera = $Camera2D
 var current_character
 
 
@@ -45,11 +45,6 @@ func add_player(id: int):
 	character.name = str(id)
 	$Players.add_child(character, true)
 	character.fired_shot.connect(_on_character_fired_shot)
-	var is_current_player = character.is_current_player()
-	if is_current_player: 
-		current_camera.position=character.position
-		current_character = character
-		
 	
 	# These lambda make sure that _on_vision_cone_body_entered etc. ALSO 
 	# get the character
@@ -163,8 +158,3 @@ func del_player(id: int):
 		return
 	$Players.get_node(str(id)).queue_free()
 	
-func _process(delta):
-	if current_character:
-		current_camera.position=current_character.position
-		
-		

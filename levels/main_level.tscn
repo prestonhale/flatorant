@@ -27,6 +27,3 @@ position = Vector2(492, 336)
 [node name="RayCast2D" type="RayCast2D" parent="."]
 collision_mask = 4
 collide_with_areas = true
-
-[node name="Camera2D" type="Camera2D" parent="."]
-position_smoothing_enabled = true

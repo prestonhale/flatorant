@@ -23,11 +23,13 @@ const SPEED = 400
 
 var debug_draw = false
 
-#func _ready():
+func _ready():
 	# Hide vision cone this isn't "us".
 	# This check is just "do we control this player's input" aka "is it us"
 #	if input.get_multiplayer_authority() != multiplayer.get_unique_id():
 #		$VisionCone2D.hide()
+	if is_current_player():
+		add_child(Camera2D.new())
 
 func is_current_player() -> bool:
 	return input.get_multiplayer_authority() == multiplayer.get_unique_id()
