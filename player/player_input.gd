@@ -21,7 +21,12 @@ func _process(delta):
 		fired = true
 	
 
-func _unhandled_input(event):
-	# Get rotation needed to look at mouse
-	if event is InputEventMouseMotion:
-		mouse_position = event.global_position
+#func _unhandled_input(event):
+#	# Get rotation needed to look at mouse
+#	if event is InputEventMouseMotion:
+#		mouse_position = event.global_position
+#		print (get_viewport().get_mouse_position())
+#
+#		var viewport = get_viewport()
+#		print (viewport.get_mouse_position())
+	

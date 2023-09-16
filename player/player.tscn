@@ -145,6 +145,4 @@ rotation = 0.00241721
 shape = SubResource("CapsuleShape2D_aqjv4")
 debug_color = Color(0.631373, 0.027451, 0.372549, 0.419608)
 
-[node name="Camera2D" type="Camera2D" parent="."]
-
 [editable path="VisionCone2D"]

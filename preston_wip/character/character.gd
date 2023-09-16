@@ -29,6 +29,10 @@ var debug_draw = false
 #	if input.get_multiplayer_authority() != multiplayer.get_unique_id():
 #		$VisionCone2D.hide()
 
+func is_current_player() -> bool:
+	return input.get_multiplayer_authority() == multiplayer.get_unique_id()
+		
+
 @rpc("call_local")
 func take_hit(hit_pos):
 	health.take_damage(hit_pos, Health.DamageLocation.shoulder)
@@ -37,7 +41,7 @@ func _process(delta):
 	if input.fired:
 		var pos_shot = gun.shoot()
 		fired_shot.emit(position, pos_shot)
-	
+	input.mouse_position = get_global_mouse_position()
 	look_at(input.mouse_position)
 	
 	# Get the input from the multiplayer synchronizer and apply it
