@@ -13,6 +13,7 @@ const SPEED = 400
 @onready var server_synchronizer = $ServerSynchronizer
 @onready var health = $Health
 @onready var gun = $Gun
+@onready var sprite = $"Player Sprite2D"
 
 @export var player := 1 :
 	set(id):
@@ -70,7 +71,8 @@ func get_root_parent(node):
 	return node
 
 func change_color(color: Color):
-	pass
+	sprite.modulate = color
+	
 
 func set_visible_to(opponent_id: int):
 	server_synchronizer.set_visibility_for(opponent_id, true)

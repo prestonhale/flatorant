@@ -39,13 +39,15 @@ properties/2/watch = false
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_27kt3"]
 size = Vector2(20, 56.999)
 
-[sub_resource type="RectangleShape2D" id="RectangleShape2D_rxobv"]
-size = Vector2(22, 20)
+[sub_resource type="CapsuleShape2D" id="CapsuleShape2D_tf64w"]
+radius = 6.99345
+height = 19.9996
 
 [sub_resource type="CapsuleShape2D" id="CapsuleShape2D_aqjv4"]
 height = 58.0
 
 [node name="Player" type="CharacterBody2D"]
+rotation = -1.57667
 collision_mask = 8
 script = ExtResource("1_vid82")
 
@@ -103,7 +105,7 @@ angle_deg = 90
 ray_count = 50
 max_distance = 250.0
 collision_layer_mask = 8
-debug_shape = true
+debug_lines = true
 
 [node name="VisionConeArea" parent="VisionCone2D" index="1"]
 collision_layer = 4
@@ -117,7 +119,7 @@ script = ExtResource("6_t530w")
 
 [node name="RayCast2D" type="RayCast2D" parent="Gun"]
 rotation = -1.5708
-target_position = Vector2(0, 2000)
+target_position = Vector2(0, 1000)
 collision_mask = 8
 collide_with_areas = true
 
@@ -131,7 +133,7 @@ collision_mask = 0
 
 [node name="HeadShape" type="CollisionShape2D" parent="Head"]
 rotation = -0.000538441
-shape = SubResource("RectangleShape2D_rxobv")
+shape = SubResource("CapsuleShape2D_tf64w")
 
 [node name="Torso" type="StaticBody2D" parent="."]
 collision_layer = 2
