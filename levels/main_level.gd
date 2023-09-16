@@ -58,13 +58,13 @@ func add_player(id: int):
 # Make the entering player visible to this player
 func _on_vision_cone_body_entered(player: Player, other_player: Node2D):
 	other_player = other_player as Player
-	print("Enter %s" % other_player.player)
+#	print("Enter %s" % other_player.player)
 	other_player.set_visible_to(player.player)
 
 # Make the exiting player invisible to this player
 func _on_vision_cone_body_exited(player: Player, other_player: Node2D):
 	other_player = other_player as Player
-	print("Exit %s" % other_player.player)
+#	print("Exit %s" % other_player.player)
 	other_player.set_invisible_to(player.player)
 
 func _on_character_fired_shot(player_pos: Vector2, shot_pos: Vector2):

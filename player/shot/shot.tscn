@@ -4,7 +4,7 @@
 
 [node name="Line2D" type="Line2D"]
 width = 2.0
-default_color = Color(0.611765, 0.509804, 0.0901961, 1)
+default_color = Color(0.815686, 0.682353, 0.129412, 1)
 script = ExtResource("1_3j4v7")
 
 [node name="Timer" type="Timer" parent="."]
