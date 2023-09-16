@@ -74,9 +74,8 @@ func _on_character_fired_shot(player_pos: Vector2, shot_pos: Vector2):
 	# Cast rays to get entry and exit points of all view cones it passes through
 	var cones = {} # PlayerId -> [EntryVec, ExitVec]
 	var points = []
-#	ray.position = player_pos + Vector2(0, -50)
-#	ray.target_position = shot_pos
-#	debug_print(ray.position, ray.target_position)
+	
+	debug_print(ray.position, ray.target_position)
 
 	# Raycast "forwards" through all the vision cones until we hit a wall. 
 	# This gives a dict of Collider -> [EntryPoint]
@@ -96,10 +95,10 @@ func _on_character_fired_shot(player_pos: Vector2, shot_pos: Vector2):
 	# that needs an exit point add it.
 	# Reverse the raycase
 	ray.position = shot_pos
-	ray.target_position = player_pos
+	ray.target_position = to_global(player_pos)
 	ray.force_raycast_update()
 	ray.clear_exceptions()
-	debug_print(ray.position, ray.target_position)
+#	debug_print(ray.position, ray.get_collision_point())
 	while ray.is_colliding():
 		var collider = ray.get_collider()
 		print(collider)
