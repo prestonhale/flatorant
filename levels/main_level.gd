@@ -46,7 +46,6 @@ func add_player(id: int):
 	$Players.add_child(character, true)
 	character.fired_shot.connect(_on_character_fired_shot)
 	var is_current_player = character.is_current_player()
-	current_character = character
 	if is_current_player: 
 		current_camera.position=character.position
 		current_character = character
