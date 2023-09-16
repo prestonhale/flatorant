@@ -6,7 +6,7 @@ var shot_scn = preload("res://player/shot/shot.tscn")
 
 @onready var players = $Players
 @onready var debug_drawer = $DebugDrawer
-@onready var ray = $RayCast2D
+@onready var ray: RayCast2D = $RayCast2D
 
 # Called when the node enters the scene tree for the first time.
 func _ready():
@@ -109,8 +109,6 @@ func _on_character_fired_shot(player_pos: Vector2, shot_pos: Vector2):
 
 	for c in cones:
 		var shot = shot_scn.instantiate()
-		print(cones[c][0])
-		print(cones[c][1])
 		shot.add_point(cones[c][0])
 		shot.add_point(cones[c][1])
 		add_child(shot)
