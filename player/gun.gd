@@ -4,8 +4,6 @@ extends Node2D
 
 var bullet_scn = preload("res://player/shot/shot.tscn")
 
-# TODO:
-# Currently this MUST BE CALLED ONLY FROM THE SERVER because of the take_hit rpc
 func shoot() -> Vector2:
 	var shot_pos = ray.get_collision_point()
 	# TODO: is_class is hacky
@@ -22,10 +20,12 @@ func shoot() -> Vector2:
 				# Headshot! Update the hit location.
 				shot_pos = ray.get_collision_point()
 #				print("Headshot!")
-				player.take_hit.rpc(shot_pos, Health.DamageLocation.head)
+				if multiplayer.is_server():
+					player.take_hit(shot_pos, Health.DamageLocation.head)
 			else:
 				# No head shot, so this is a regular torso shot
 #				print("Hit torso!")
-				player.take_hit.rpc(shot_pos, Health.DamageLocation.shoulder)
+				if multiplayer.is_server():
+					player.take_hit.rpc(shot_pos, Health.DamageLocation.shoulder)
 					
 	return shot_pos

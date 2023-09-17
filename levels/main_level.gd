@@ -79,9 +79,7 @@ func _on_vision_cone_body_exited(player: Player, other_player: Node2D):
 #	print("Exit %s" % other_player.player)
 	other_player.set_invisible_to(player.player)
 
-func _on_character_fired_shot(player: Player):
-	var shot_pos = player.gun.shoot()
-	var player_pos = player.position
+func _on_character_fired_shot(player_pos: Vector2, shot_pos: Vector2):
 	# Cast rays to get entry aand exit points of all view cones it passes through
 	var cones = {} # PlayerId -> [EntryVec, ExitVec]
 	var points = []
@@ -117,13 +115,14 @@ func _on_character_fired_shot(player: Player):
 			
 func _on_player_died(player: Player):
 	print("_on_player_died")
+	player._on_died.rpc()
 	get_tree().create_timer(death_timer).timeout.connect(
 		func (): _on_character_death_timer_expired(player)
 	)
 
 func _on_character_death_timer_expired(player: Player):
 	print("Respawn")
-	player.respawn()
+	player.respawn.rpc()
 	player.position = $StartPosition.position
 
 func debug_print(a, b):
