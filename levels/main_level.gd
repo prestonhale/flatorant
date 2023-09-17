@@ -2,12 +2,13 @@ extends Node2D
 
 const SPAWN_RANDOM = 5.0
 
+@export var death_timer = 2.0
+
 var shot_scn = preload("res://player/shot/shot.tscn")
 
 @onready var players = $Players
 @onready var debug_drawer = $DebugDrawer
 @onready var ray: RayCast2D = $RayCast2D
-@onready var camera = $Camera2D
 var current_character
 
 var PLAYER_COLORS = [
@@ -18,7 +19,6 @@ var PLAYER_COLORS = [
 	Color.ORANGE,
 	Color.YELLOW
 ]
-
 
 var circle_pos = Vector2.ZERO
 var line_pos_a = Vector2.ZERO
@@ -58,14 +58,14 @@ func add_player(id: int):
 	var player_count = $Players.get_child_count() - 1
 	character.change_color(PLAYER_COLORS[player_count])
 	
-	# These lambda make sure that _on_vision_cone_body_entered etc. ALSO 
-	# get the character
 	character.vision_cone_area.body_entered.connect(
 		func(other_player: Node2D): _on_vision_cone_body_entered(character, other_player)
 	)
 	character.vision_cone_area.body_exited.connect(
 		func(other_player: Node2D): _on_vision_cone_body_exited(character, other_player)
 	)
+	character.health.died.connect(
+		func(): _on_player_died(character))
 	
 # Make the entering player visible to this player
 func _on_vision_cone_body_entered(player: Player, other_player: Node2D):
@@ -79,12 +79,12 @@ func _on_vision_cone_body_exited(player: Player, other_player: Node2D):
 #	print("Exit %s" % other_player.player)
 	other_player.set_invisible_to(player.player)
 
-func _on_character_fired_shot(player_pos: Vector2, shot_pos: Vector2):
+func _on_character_fired_shot(player: Player):
+	var shot_pos = player.gun.shoot()
+	var player_pos = player.position
 	# Cast rays to get entry aand exit points of all view cones it passes through
 	var cones = {} # PlayerId -> [EntryVec, ExitVec]
 	var points = []
-	
-#	_draw_shot_tracer.rpc(player_pos, shot_pos)
 	
 	# Cast ray forwards to get entry points
 	ray.position = player_pos
@@ -109,17 +109,22 @@ func _on_character_fired_shot(player_pos: Vector2, shot_pos: Vector2):
 		ray.force_raycast_update()
 	
 	ray.clear_exceptions()
-##
-	for c in cones:
-		if cones[c].size() != 2:
-			return
-#
+
 	for c in cones:
 		var p = cones[c]
 		var p_id = c.get_parent().get_parent().player
 		_draw_shot_tracer.rpc_id(p_id, p[0], p[1])
 			
-	# Render rays made up of EntryVec, ExitVec to specific players
+func _on_player_died(player: Player):
+	print("_on_player_died")
+	get_tree().create_timer(death_timer).timeout.connect(
+		func (): _on_character_death_timer_expired(player)
+	)
+
+func _on_character_death_timer_expired(player: Player):
+	print("Respawn")
+	player.respawn()
+	player.position = $StartPosition.position
 
 func debug_print(a, b):
 	var shot = shot_scn.instantiate()

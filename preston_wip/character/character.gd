@@ -4,11 +4,11 @@ class_name Player
 
 signal fired_shot
 
-
 const SPEED = 400
 
 
 @onready var input = $PlayerInput
+@onready var vision_cone = $VisionCone2D
 @onready var vision_cone_area = $VisionCone2D/VisionConeArea
 @onready var server_synchronizer = $ServerSynchronizer
 @onready var health = $Health
@@ -31,19 +31,21 @@ func _ready():
 		add_child(Camera2D.new())
 	else:
 		$VisionCone2D.hide()
+	
+	health.died.connect(_on_died)
 
 func is_current_player() -> bool:
 	return input.get_multiplayer_authority() == multiplayer.get_unique_id()
 		
 
-@rpc("call_local")
-func take_hit(hit_pos):
-	health.take_damage(hit_pos, Health.DamageLocation.shoulder)
+@rpc("call_local", "reliable")
+func take_hit(hit_pos: Vector2, dmg_location: Health.DamageLocation):
+	health.take_damage(hit_pos, dmg_location)
 	
 func _process(delta):
 	if input.fired:
-		var pos_shot = gun.shoot()
-		fired_shot.emit(position, pos_shot)
+		gun.shoot()
+		fired_shot.emit(self)
 	
 	if is_current_player():
 		input.mouse_position = get_global_mouse_position()
@@ -64,16 +66,24 @@ func _process(delta):
 
 	move_and_slide()
 
-func get_root_parent(node):
-	# Recursive function to get the root parent of a node
-	if node.get_parent():
-		return get_root_parent(node.get_parent())
-	return node
+func _on_died():
+	sprite.hide()
+	vision_cone.hide()
+	set_controls_enabled(false)
+
+func respawn():
+	sprite.show()
+	if is_current_player():
+		vision_cone.show()
+	health.reset()
+	set_controls_enabled(true)
+	
+func set_controls_enabled(enabled: bool):
+	input.set_process(enabled)
 
 func change_color(color: Color):
 	sprite.modulate = color
 	
-
 func set_visible_to(opponent_id: int):
 	server_synchronizer.set_visibility_for(opponent_id, true)
 
