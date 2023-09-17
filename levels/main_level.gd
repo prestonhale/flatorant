@@ -91,7 +91,6 @@ func _on_character_fired_shot(player_pos: Vector2, shot_pos: Vector2):
 	ray.target_position = shot_pos - player_pos
 	ray.force_raycast_update()
 	while ray.is_colliding():
-		print("entry")
 		var collider = ray.get_collider()
 		cones[collider] = [ray.get_collision_point()]
 		ray.add_exception(collider) # Don't hit this cone again
@@ -111,10 +110,9 @@ func _on_character_fired_shot(player_pos: Vector2, shot_pos: Vector2):
 	
 	ray.clear_exceptions()
 ##
-	print(cones)
 	for c in cones:
 		if cones[c].size() != 2:
-			print("fuck")
+			return
 #
 	for c in cones:
 		var p = cones[c]
@@ -139,7 +137,6 @@ func _draw_shot_tracer(player_pos: Vector2, shot_pos: Vector2):
 	
 
 func _draw():
-	print("draw")
 	draw_circle(circle_pos, 10, Color.RED)
 #	draw_line(line_pos_a, line_pos_b, Color.YELLOW_GREEN, 2)
 	

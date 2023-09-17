@@ -21,6 +21,10 @@ properties/2/path = NodePath(".:rotation")
 properties/2/spawn = true
 properties/2/sync = true
 properties/2/watch = false
+properties/3/path = NodePath("PlayerSprite2D:modulate")
+properties/3/spawn = true
+properties/3/sync = false
+properties/3/watch = false
 
 [sub_resource type="SceneReplicationConfig" id="SceneReplicationConfig_ms0hk"]
 properties/0/path = NodePath(".:direction")

@@ -18,10 +18,6 @@ var _vision_points: Array[Vector2]
 var _last_position = null
 var _last_redraw_time = 0
 
-# Called when the node enters the scene tree for the first time.
-func _ready():
-	print(left_ray)
-	print(right_ray)
 	
 func _physics_process(delta: float) -> void:
 	recalculate_vision()
