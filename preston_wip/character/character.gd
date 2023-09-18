@@ -4,6 +4,7 @@ class_name Player
 
 const SPEED = 400
 
+signal fired_shot
 
 @onready var input = $PlayerInput
 @onready var vision_cone = $VisionCone2D
@@ -41,7 +42,7 @@ func take_hit(hit_pos: Vector2, dmg_location: Health.DamageLocation):
 func _process(delta):
 	if input.fired:
 		print("Shot fired by: %s" % player)
-		gun.shoot()
+		fired_shot.emit(self)
 
 	look_at(input.mouse_position)
 	

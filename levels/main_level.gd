@@ -6,9 +6,10 @@ const SPAWN_RANDOM = 5.0
 
 var shot_scn = preload("res://player/shot/shot.tscn")
 
-@onready var players = $Players
-@onready var debug_drawer = $DebugDrawer
-@onready var ray: RayCast2D = $RayCast2D
+@onready var players := $Players
+@onready var debug_drawer := $DebugDrawer
+@onready var ray := $RayCast2D
+@onready var shots_manager := $ShotsManager
 var current_character
 
 var PLAYER_COLORS = [
@@ -67,6 +68,7 @@ func add_player(id: int):
 #	character.vision_cone_area.body_exited.connect(
 #		func(other_player: Node2D): _on_vision_cone_body_exited(character, other_player)
 #	)
+	character.fired_shot.connect(shots_manager.on_player_fired_shot)
 	character.health.died.connect(
 		func(): _on_player_died(character))
 	
