@@ -1,15 +1,18 @@
 extends Node2D
 
+class_name MainLevel
+
 const SPAWN_RANDOM = 5.0
 
 @export var death_timer = 2.0
 
-var shot_scn = preload("res://player/shot/shot.tscn")
+var shot_scn = preload("res://shot/shot.tscn")
 
 @onready var players := $Players
 @onready var debug_drawer := $DebugDrawer
 @onready var ray := $RayCast2D
 @onready var shots_manager := $ShotsManager
+@onready var player_spawner := $PlayerSpawner
 var current_character
 
 var PLAYER_COLORS = [
@@ -27,6 +30,10 @@ var line_pos_b = Vector2.ZERO
 
 # Called when the node enters the scene tree for the first time.
 func _ready():
+	# Clients need to be able to track player actions
+	player_spawner.spawned.connect(_track_new_player)
+	
+	# Server only beyond this point	
 	if not multiplayer.is_server():
 		return
 	
@@ -56,8 +63,6 @@ func add_player(id: int):
 	
 	$Players.add_child(character, true)
 	
-	character.gun.fired_shot.connect(_on_character_fired_shot)
-	
 	var player_count = $Players.get_child_count() - 1
 	character.change_color(PLAYER_COLORS[player_count])
 
@@ -71,6 +76,10 @@ func add_player(id: int):
 	character.fired_shot.connect(shots_manager.on_player_fired_shot)
 	character.health.died.connect(
 		func(): _on_player_died(character))
+	
+# Hook up the player to all the systems that track their actions
+func _track_new_player(player: Player):
+	shots_manager.track_player(player)
 	
 # Make the entering player visible to this player
 func _on_vision_cone_body_entered(player: Player, other_player: Node2D):

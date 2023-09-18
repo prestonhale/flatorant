@@ -1,11 +1,18 @@
 extends Node2D
 
-var shot_scn = preload("res://player/shot/shot.tscn")
+var shot_scn = preload("res://shot/shot.tscn")
+
+func _ready():
+	var player_spawner = $"../PlayerSpawner"
+	player_spawner.spawned.connect(track_player)
+
+func track_player(player: Player):
+	player.fired_shot.connect(on_player_fired_shot)
 
 # TODO: Include more details about the shot like "what gun"
 func on_player_fired_shot(player: Player):
-	print("on_player_fired_shot")
-	var ray = player.gun.ray
+#	print("on_player_fired_shot")
+	var ray = player.get_node("Gun").get_node("RayCast2D")
 	var shot_pos = ray.get_collision_point()
 
 	var collision = ray.get_collider()
@@ -23,10 +30,12 @@ func on_player_fired_shot(player: Player):
 			# No head shot, so this is a regular torso shot
 			else:
 				print("Hit: Torso!")
-	# TODO: Clients won't see their own shots until the server replicates them
+
+	draw_tracer.rpc(player.position, shot_pos)
+	
 	if multiplayer.is_server():
-		draw_tracer.rpc(player.position, shot_pos)
-	return shot_pos
+		# TODO: Draw the tracers that can be seen in vision cones
+		pass
 
 @rpc("call_local")
 func draw_tracer(start: Vector2, end: Vector2):
