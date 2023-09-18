@@ -52,18 +52,21 @@ func add_player(id: int):
 	character.player = id
 	character.position = $StartPosition.position
 	character.name = str(id)
+	
 	$Players.add_child(character, true)
-	character.fired_shot.connect(_on_character_fired_shot)
+	
+	character.gun.fired_shot.connect(_on_character_fired_shot)
 	
 	var player_count = $Players.get_child_count() - 1
 	character.change_color(PLAYER_COLORS[player_count])
-	
-	character.vision_cone_area.body_entered.connect(
-		func(other_player: Node2D): _on_vision_cone_body_entered(character, other_player)
-	)
-	character.vision_cone_area.body_exited.connect(
-		func(other_player: Node2D): _on_vision_cone_body_exited(character, other_player)
-	)
+
+	# Capture important signals from this player
+#	character.vision_cone_area.body_entered.connect(
+#		func(other_player: Node2D): _on_vision_cone_body_entered(character, other_player)
+#	)
+#	character.vision_cone_area.body_exited.connect(
+#		func(other_player: Node2D): _on_vision_cone_body_exited(character, other_player)
+#	)
 	character.health.died.connect(
 		func(): _on_player_died(character))
 	
@@ -96,7 +99,7 @@ func _on_character_fired_shot(player_pos: Vector2, shot_pos: Vector2):
 	
 	ray.clear_exceptions()
 	
-	# Cast ray backwards to get exit points
+	# Cast ray backwards to get exit pointsda
 	ray.position = shot_pos
 	ray.target_position = player_pos - shot_pos
 	ray.force_raycast_update()
@@ -149,4 +152,8 @@ func del_player(id: int):
 	if not $Players.has_node(str(id)):
 		return
 	$Players.get_node(str(id)).queue_free()
+	
+func _unhandled_input(event: InputEvent):
+	if Input.is_action_just_pressed("exit"):
+		get_tree().quit()
 	

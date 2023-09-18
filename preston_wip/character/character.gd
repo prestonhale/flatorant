@@ -2,8 +2,6 @@ extends CharacterBody2D
 
 class_name Player
 
-signal fired_shot
-
 const SPEED = 400
 
 
@@ -14,6 +12,7 @@ const SPEED = 400
 @onready var health = $Health
 @onready var gun = $Gun
 @onready var sprite = $PlayerSprite2D
+@onready var camera = $Camera2D
 
 @export var player := 1 :
 	set(id):
@@ -25,10 +24,10 @@ const SPEED = 400
 var debug_draw = false
 
 func _ready():
-	# Hide vision cone this isn't "us".
-	# This check is just "do we control this player's input" aka "is it us"
+#	Input.mouse_mode = Input.MOUSE_MODE_CONFINED
+	
 	if is_current_player():
-		add_child(Camera2D.new())
+		camera.make_current()
 	else:
 		$VisionCone2D.hide()
 
@@ -41,13 +40,10 @@ func take_hit(hit_pos: Vector2, dmg_location: Health.DamageLocation):
 	
 func _process(delta):
 	if input.fired:
-		var shot_pos = gun.shoot()
-		fired_shot.emit(position, shot_pos)
-	
-	if is_current_player():
-		input.mouse_position = get_global_mouse_position()
-	if multiplayer.is_server():
-		look_at(input.mouse_position)
+		print("Shot fired by: %s" % player)
+		gun.shoot()
+
+	look_at(input.mouse_position)
 	
 	# Get the input from the multiplayer synchronizer and apply it
 	var direction = Vector2(
