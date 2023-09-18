@@ -16,7 +16,10 @@ func on_player_fired_shot(player: Player):
 	var shot_pos = ray.get_collision_point()
 
 	var collision = ray.get_collider()
+	var hit_player
+	var dmg_location
 	if collision:
+		hit_player = collision.get_parent() as Player
 		if collision.name == "Torso":
 			# Exclude the torso, check again to see if our shot passesd through
 			# the head
@@ -26,16 +29,21 @@ func on_player_fired_shot(player: Player):
 			if ray.is_colliding() and ray.get_collider().name == "Head":
 				# Headshot! Update the hit location.
 				shot_pos = ray.get_collision_point()
+				dmg_location = Health.DamageLocation.head
 				print("Hit Head!")
 			# No head shot, so this is a regular torso shot
 			else:
+				dmg_location = Health.DamageLocation.shoulder
 				print("Hit: Torso!")
 
 	draw_tracer.rpc(player.position, shot_pos)
 	
+	# ==== Server Section ====
 	if multiplayer.is_server():
-		# TODO: Draw the tracers that can be seen in vision cones
-		pass
+		# Hits must be confirmed on the server to be valid
+		if hit_player:
+			hit_player.take_hit.rpc(shot_pos, dmg_location)
+		
 
 @rpc("call_local")
 func draw_tracer(start: Vector2, end: Vector2):
