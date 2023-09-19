@@ -6,7 +6,7 @@ const SPAWN_RANDOM = 5.0
 
 @export var death_timer = 2.0
 
-var shot_scn = preload("res://shot/shot.tscn")
+var shot_scn = preload("res://effects/shot/shot.tscn")
 
 @onready var players := $Players
 @onready var debug_drawer := $DebugDrawer
@@ -64,7 +64,7 @@ func add_player(id: int):
 	$Players.add_child(character, true)
 	
 	var player_count = $Players.get_child_count() - 1
-	character.change_color(PLAYER_COLORS[player_count])
+#	character.change_color(PLAYER_COLORS[player_count])
 
 	# Capture important signals from this player
 #	character.vision_cone_area.body_entered.connect(

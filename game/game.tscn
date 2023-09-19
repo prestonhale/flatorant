@@ -1,8 +1,9 @@
-[gd_scene load_steps=4 format=3 uid="uid://ig82qvja135b"]
+[gd_scene load_steps=5 format=3 uid="uid://ig82qvja135b"]
 
 [ext_resource type="Script" path="res://game/game.gd" id="1_irq42"]
 [ext_resource type="PackedScene" uid="uid://cev2pvlm8tegn" path="res://ui/connect_to_lobby/connect_to_lobby.tscn" id="2_ginb4"]
 [ext_resource type="Texture2D" uid="uid://ck4jd04bqx7k0" path="res://ui/connect_to_lobby/sad_val.png" id="3_eiwhi"]
+[ext_resource type="Texture2D" uid="uid://ba6q8s83isana" path="res://art/crab.png" id="4_6ow2m"]
 
 [node name="Game" type="Node2D"]
 script = ExtResource("1_irq42")
@@ -27,10 +28,11 @@ grow_vertical = 1
 size_flags_vertical = 3
 
 [node name="TextEdit" parent="ConnectToLobbyUI" index="2"]
-offset_left = -297.0
-offset_top = 49.0
-offset_right = 275.0
-offset_bottom = 149.0
+offset_left = -301.0
+offset_top = 53.0
+offset_right = 329.0
+offset_bottom = 153.0
+text = "Craborant"
 autowrap_mode = 2
 
 [node name="TextureRect" type="TextureRect" parent="ConnectToLobbyUI"]
@@ -46,6 +48,23 @@ grow_horizontal = 2
 scale = Vector2(0.37, 0.37)
 pivot_offset = Vector2(534.884, 483.721)
 texture = ExtResource("3_eiwhi")
+
+[node name="TextureRect2" type="TextureRect" parent="ConnectToLobbyUI"]
+texture_filter = 1
+texture_repeat = 1
+layout_mode = 1
+anchors_preset = 5
+anchor_left = 0.5
+anchor_right = 0.5
+offset_left = -350.0
+offset_top = 42.0
+offset_right = 155.0
+offset_bottom = 399.0
+grow_horizontal = 2
+rotation = -0.246091
+scale = Vector2(0.37, 0.37)
+pivot_offset = Vector2(534.884, 483.721)
+texture = ExtResource("4_6ow2m")
 
 [connection signal="pressed" from="ConnectToLobbyUI/Net/Options/Host" to="." method="_on_host_pressed"]
 [connection signal="pressed" from="ConnectToLobbyUI/Net/Options/Connect" to="." method="_on_connect_pressed"]

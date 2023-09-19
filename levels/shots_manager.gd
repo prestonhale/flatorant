@@ -1,6 +1,9 @@
 extends Node2D
 
-var shot_scn = preload("res://shot/shot.tscn")
+@onready var splashes = $Splashes
+
+var shot_scn = preload("res://effects/shot/shot.tscn")
+var splash_index = 0
 
 func _ready():
 	var player_spawner = $"../PlayerSpawner"
@@ -35,7 +38,8 @@ func on_player_fired_shot(player: Player):
 			else:
 				dmg_location = Health.DamageLocation.shoulder
 				print("Hit: Torso!")
-
+	
+	draw_hit_splash.rpc(shot_pos)
 	draw_tracer.rpc(player.position, shot_pos)
 	
 	# ==== Server Section ====
@@ -43,7 +47,23 @@ func on_player_fired_shot(player: Player):
 		# Hits must be confirmed on the server to be valid
 		if hit_player:
 			hit_player.take_hit.rpc(shot_pos, dmg_location)
-		
+
+
+@rpc("call_local")
+func draw_hit_splash(shot_pos: Vector2):
+	print("draw_hit_splash")
+	
+	var splash = splashes.get_child(splash_index)
+	splash.global_position = shot_pos
+	add_child(splash)
+	splash.restart()
+	splash.emitting = true
+	
+	# Move index up, restart if needed
+	splash_index += 1
+	if splash_index > splashes.get_child_count() - 1:
+		splash_index = 0
+
 
 @rpc("call_local")
 func draw_tracer(start: Vector2, end: Vector2):
