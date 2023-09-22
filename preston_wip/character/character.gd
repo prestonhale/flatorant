@@ -59,6 +59,8 @@ func _process(delta):
 		velocity.y = 0
 
 	move_and_slide()
+	
+#	view_shader.update(vision_cone.duplicate())
 
 @rpc("call_local")
 func _on_died():
@@ -85,7 +87,9 @@ func set_visible_to(opponent_id: int):
 
 func set_invisible_to(opponent_id: int):
 	server_synchronizer.set_visibility_for(opponent_id, false)
-	
+
+func get_vision_cone_polygon() -> Polygon2D:
+	return $VisionCone2D/VisionConeRenderer
 
 
 

@@ -1,4 +1,4 @@
-[gd_scene load_steps=11 format=3 uid="uid://dp8t0836j5usl"]
+[gd_scene load_steps=11 format=3 uid="uid://b001tvur7jlkr"]
 
 [ext_resource type="Script" path="res://preston_wip/character/character.gd" id="1_vid82"]
 [ext_resource type="Texture2D" uid="uid://ba6q8s83isana" path="res://art/crab.png" id="2_f4qvb"]
@@ -29,14 +29,14 @@ properties/4/sync = false
 properties/4/watch = false
 
 [sub_resource type="CapsuleShape2D" id="CapsuleShape2D_vsdfj"]
-radius = 26.0
-height = 115.0
+radius = 7.0
+height = 37.0
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_7jikk"]
-size = Vector2(52.9998, 115)
+size = Vector2(13, 37.9975)
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_8jrak"]
-size = Vector2(19.4989, 40.0011)
+size = Vector2(8.99946, 16)
 
 [sub_resource type="SceneReplicationConfig" id="SceneReplicationConfig_ms0hk"]
 properties/0/path = NodePath(".:direction")
@@ -53,14 +53,14 @@ properties/2/sync = true
 properties/2/watch = false
 
 [node name="Player" type="CharacterBody2D"]
+scale = Vector2(2, 2)
 collision_mask = 8
 script = ExtResource("1_vid82")
 
 [node name="PlayerSprite2D" type="Sprite2D" parent="."]
 texture_filter = 1
-position = Vector2(-11, 0)
+position = Vector2(-5, 0)
 rotation = -1.5708
-scale = Vector2(3, 3)
 texture = ExtResource("2_f4qvb")
 
 [node name="Health" type="Node2D" parent="."]
@@ -126,18 +126,21 @@ one_shot = true
 replication_config = SubResource("SceneReplicationConfig_fii6g")
 
 [node name="VisionCone2D" parent="." instance=ExtResource("3_lt0ua")]
+position = Vector2(-8, 0)
 rotation = -1.5708
-angle_deg = 90
+angle_deg = 60
 ray_count = 50
-max_distance = 700.0
+max_distance = 800.0
 collision_layer_mask = 8
-debug_shape = true
+
+[node name="VisionConeRenderer" parent="VisionCone2D" index="0"]
+color = Color(0.431373, 0.929412, 0.278431, 0)
 
 [node name="VisionConeArea" parent="VisionCone2D" index="1"]
 collision_layer = 4
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="."]
-position = Vector2(3.0268e-09, -0.499993)
+position = Vector2(-1, -1)
 shape = SubResource("CapsuleShape2D_vsdfj")
 
 [node name="Gun" type="Node2D" parent="."]
@@ -155,7 +158,7 @@ collision_layer = 2
 collision_mask = 0
 
 [node name="TorsoShape" type="CollisionShape2D" parent="Torso"]
-position = Vector2(-0.499998, 0.998791)
+position = Vector2(-1.49999, -0.00483416)
 rotation = 0.00241721
 shape = SubResource("RectangleShape2D_7jikk")
 debug_color = Color(0.631373, 0.027451, 0.372549, 0.419608)
@@ -165,13 +168,14 @@ collision_layer = 2
 collision_mask = 0
 
 [node name="HeadShape" type="CollisionShape2D" parent="Head"]
-position = Vector2(-18.2505, 0.00121254)
+position = Vector2(-7.49973, -0.000269413)
 rotation = -0.000538441
 shape = SubResource("RectangleShape2D_8jrak")
 
 [node name="Camera2D" type="Camera2D" parent="."]
 
 [node name="PlayerInput" type="Node2D" parent="."]
+position = Vector2(0.5, 0)
 script = ExtResource("4_3clxj")
 
 [node name="PlayerInputSynchronizer" type="MultiplayerSynchronizer" parent="PlayerInput"]

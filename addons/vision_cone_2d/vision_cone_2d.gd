@@ -52,11 +52,15 @@ var _last_redraw_time = 0
 func _process(_delta: float) -> void:
 	if debug_lines or debug_shape:
 		queue_redraw()
-
-func _physics_process(delta: float) -> void:
+	
 	if Time.get_ticks_msec() - _last_redraw_time > minimum_recalculate_time_msec:
 		_last_redraw_time = Time.get_ticks_msec()
 		recalculate_vision()
+
+#func _physics_process(delta: float) -> void:
+#	if Time.get_ticks_msec() - _last_redraw_time > minimum_recalculate_time_msec:
+#		_last_redraw_time = Time.get_ticks_msec()
+#		recalculate_vision()
 
 func recalculate_vision(override_static_flag = false):
 	var should_recalculate = override_static_flag or recalculate_if_static

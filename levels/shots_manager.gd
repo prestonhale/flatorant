@@ -23,7 +23,11 @@ func on_player_fired_shot(player: Player):
 	var dmg_location
 	if collision:
 		hit_player = collision.get_parent() as Player
-		if collision.name == "Torso":
+		if collision.name == "Head":
+			shot_pos = ray.get_collision_point()
+			dmg_location = Health.DamageLocation.head
+			print("Hit Head!")
+		elif collision.name == "Torso":
 			# Exclude the torso, check again to see if our shot passesd through
 			# the head
 			ray.add_exception(collision)

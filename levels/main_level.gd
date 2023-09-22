@@ -13,6 +13,7 @@ var shot_scn = preload("res://effects/shot/shot.tscn")
 @onready var ray := $RayCast2D
 @onready var shots_manager := $ShotsManager
 @onready var player_spawner := $PlayerSpawner
+@onready var fog_of_war := $FogOfWar
 var current_character
 
 var PLAYER_COLORS = [
@@ -48,6 +49,9 @@ func _ready():
 	if not OS.has_feature("dedicated_server"):
 		add_player(1)
 
+func _process(delta: float):
+	fog_of_war.update(players.get_child(0))
+	
 func _exit_tree():
 	if not multiplayer.is_server():
 		return
