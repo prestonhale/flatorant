@@ -43,30 +43,35 @@ func is_current_player() -> bool:
 @rpc("call_local")
 func take_hit(hit_pos: Vector2, dmg_location: Health.DamageLocation):
 	health.take_damage(hit_pos, dmg_location)
+
+# The simulation for a player only runs locally and on the server
+# This turns "inputs" into player state
+func _simulate():
+	synced_rotation = input.to_rotation
+
+	# Move player in direction of WASD keys
+	var direction = Vector2(
+		input.direction.x,
+		input.direction.y
+	).normalized()
+	if direction:
+		velocity.x = direction.x * SPEED
+		velocity.y = direction.y * SPEED
+	else:
+		velocity.x = 0
+		velocity.y = 0
 	
+	# Check if player shot
+	if input.fired:
+		print("Shot fired by: %s" % player)
+		fired_shot.emit(self)
+
+# Replicates the players state
 func _process(delta):
-	# Rotate player to look at mouse
-	if is_current_player() or multiplayer.is_server():
-		synced_rotation = input.to_rotation
-		if player == 1:
-			print("Player %s: %s" % [player, synced_rotation])
-	
-		# Move player in direction of WASD keys
-		var direction = Vector2(
-			input.direction.x,
-			input.direction.y
-		).normalized()
-		if direction:
-			velocity.x = direction.x * SPEED
-			velocity.y = direction.y * SPEED
-		else:
-			velocity.x = 0
-			velocity.y = 0
-		
-		# Check if player shot
-		if input.fired:
-			print("Shot fired by: %s" % player)
-			fired_shot.emit(self)
+	# The current player and the server run the simulation.
+	# Remote players just have their state sent down by the server.
+	if multiplayer.is_server() or is_current_player():
+		_simulate()
 	
 	rotation = synced_rotation
 	move_and_slide()
