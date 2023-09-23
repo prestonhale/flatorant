@@ -51,7 +51,7 @@ var _last_redraw_time = 0
 
 func _process(_delta: float) -> void:
 	# Process after the player script
-	process_priority = 20
+#	process_priority = 20
 	
 	if debug_lines or debug_shape:
 		queue_redraw()

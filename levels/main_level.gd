@@ -33,7 +33,7 @@ var line_pos_b = Vector2.ZERO
 # Called when the node enters the scene tree for the first time.
 func _ready():
 	# Process after player nodes
-	process_priority = 30
+#	process_priority = 30
 	
 	# Clients need to be able to track player actions
 	player_spawner.spawned.connect(_track_new_player)

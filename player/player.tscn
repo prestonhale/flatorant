@@ -51,6 +51,10 @@ properties/2/path = NodePath(".:fired")
 properties/2/spawn = true
 properties/2/sync = true
 properties/2/watch = false
+properties/3/path = NodePath(".:to_rotation")
+properties/3/spawn = true
+properties/3/sync = true
+properties/3/watch = false
 
 [node name="Player" type="CharacterBody2D"]
 scale = Vector2(2, 2)

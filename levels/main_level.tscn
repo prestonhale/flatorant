@@ -67,6 +67,7 @@ script = ExtResource("7_i4ne7")
 default_fog_color = Color(0, 0, 0, 0.172549)
 
 [node name="TextureRect" type="TextureRect" parent="FogOfWar"]
+layout_mode = 0
 offset_right = 40.0
 offset_bottom = 40.0
 

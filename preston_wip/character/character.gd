@@ -27,13 +27,11 @@ var debug_draw = false
 
 func _ready():
 	# Process this script after "PlayerInput"
-	process_priority = 10
+#	process_priority = 10
 	
 #	Input.mouse_mode = Input.MOUSE_MODE_CONFINED
 	
-	if is_current_player():
-		camera.make_current()
-	else:
+	if not is_current_player():
 		$VisionCone2D.hide()
 
 func is_current_player() -> bool:
@@ -44,13 +42,15 @@ func take_hit(hit_pos: Vector2, dmg_location: Health.DamageLocation):
 	health.take_damage(hit_pos, dmg_location)
 	
 func _process(delta):
+	# Check if player shot
 	if input.fired:
 		print("Shot fired by: %s" % player)
 		fired_shot.emit(self)
 
-	look_at(input.mouse_position)
+	# Rotate player to look at mouse
+	global_rotation = input.to_rotation
 	
-	# Get the input from the multiplayer synchronizer and apply it
+	# Move player in direction of WASD keys
 	var direction = Vector2(
 		input.direction.x,
 		input.direction.y
