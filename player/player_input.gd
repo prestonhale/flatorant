@@ -12,6 +12,8 @@ var enabled = true
 
 
 func _ready():
+	# Always process input first 
+	process_priority = 1
 	# Allow server (but no other players) to see our inputs
 	synchronizer.set_visibility_for(1, true)
 	

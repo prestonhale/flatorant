@@ -71,7 +71,7 @@ func draw_hit_splash(shot_pos: Vector2):
 
 @rpc("call_local")
 func draw_tracer(start: Vector2, end: Vector2):
-	print("draw_tracer")
+#	print("draw_tracer")
 	var shot = shot_scn.instantiate()
 	shot.add_point(start)
 	shot.add_point(end)

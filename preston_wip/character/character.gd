@@ -14,6 +14,7 @@ signal fired_shot
 @onready var gun = $Gun
 @onready var sprite = $PlayerSprite2D
 @onready var camera = $Camera2D
+@onready var fog_of_war = $FogOfWar
 
 @export var player := 1 :
 	set(id):
@@ -25,6 +26,9 @@ signal fired_shot
 var debug_draw = false
 
 func _ready():
+	# Process this script after "PlayerInput"
+	process_priority = 10
+	
 #	Input.mouse_mode = Input.MOUSE_MODE_CONFINED
 	
 	if is_current_player():
@@ -60,7 +64,7 @@ func _process(delta):
 
 	move_and_slide()
 	
-#	view_shader.update(vision_cone.duplicate())
+#	fog_of_war.update(self)
 
 @rpc("call_local")
 func _on_died():

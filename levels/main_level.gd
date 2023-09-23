@@ -14,7 +14,8 @@ var shot_scn = preload("res://effects/shot/shot.tscn")
 @onready var shots_manager := $ShotsManager
 @onready var player_spawner := $PlayerSpawner
 @onready var fog_of_war := $FogOfWar
-var current_character
+
+var current_character # The character representing our client's player
 
 var PLAYER_COLORS = [
 	Color.RED,
@@ -50,7 +51,7 @@ func _ready():
 		add_player(1)
 
 func _process(delta: float):
-	fog_of_war.update(players.get_child(0))
+	fog_of_war.update(current_character)
 	
 func _exit_tree():
 	if not multiplayer.is_server():
@@ -65,6 +66,9 @@ func add_player(id: int):
 	character.position = $StartPosition.position
 	character.name = str(id)
 	
+	if id == multiplayer.get_unique_id():
+		current_character = character
+	
 	$Players.add_child(character, true)
 	
 	var player_count = $Players.get_child_count() - 1
@@ -77,7 +81,9 @@ func add_player(id: int):
 #	character.vision_cone_area.body_exited.connect(
 #		func(other_player: Node2D): _on_vision_cone_body_exited(character, other_player)
 #	)
-	character.fired_shot.connect(shots_manager.on_player_fired_shot)
+	character.fired_shot.connect(
+		shots_manager.on_player_fired_shot)
+		
 	character.health.died.connect(
 		func(): _on_player_died(character))
 	
