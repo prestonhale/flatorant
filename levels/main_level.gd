@@ -90,6 +90,9 @@ func add_player(id: int):
 	
 # Hook up the player to all the systems that track their actions
 func _track_new_player(player: Player):
+	if player.player == multiplayer.get_unique_id():
+		current_character = player
+		fog_of_war.tracked_player = current_character
 	shots_manager.track_player(player)
 	
 # Make the entering player visible to this player

@@ -11,22 +11,18 @@ properties/0/path = NodePath(".:player")
 properties/0/spawn = true
 properties/0/sync = true
 properties/0/watch = false
-properties/1/path = NodePath(".:position")
+properties/1/path = NodePath("PlayerSprite2D:modulate")
 properties/1/spawn = true
 properties/1/sync = true
 properties/1/watch = false
-properties/2/path = NodePath("PlayerSprite2D:modulate")
+properties/2/path = NodePath("PlayerSprite2D:visible")
 properties/2/spawn = true
-properties/2/sync = true
+properties/2/sync = false
 properties/2/watch = false
-properties/3/path = NodePath(".:rotation")
+properties/3/path = NodePath(".:position")
 properties/3/spawn = true
 properties/3/sync = true
 properties/3/watch = false
-properties/4/path = NodePath("PlayerSprite2D:visible")
-properties/4/spawn = true
-properties/4/sync = false
-properties/4/watch = false
 
 [sub_resource type="CapsuleShape2D" id="CapsuleShape2D_vsdfj"]
 radius = 7.0
@@ -43,18 +39,14 @@ properties/0/path = NodePath(".:direction")
 properties/0/spawn = true
 properties/0/sync = true
 properties/0/watch = false
-properties/1/path = NodePath(".:mouse_position")
+properties/1/path = NodePath(".:fired")
 properties/1/spawn = true
 properties/1/sync = true
 properties/1/watch = false
-properties/2/path = NodePath(".:fired")
+properties/2/path = NodePath(".:to_rotation")
 properties/2/spawn = true
 properties/2/sync = true
 properties/2/watch = false
-properties/3/path = NodePath(".:to_rotation")
-properties/3/spawn = true
-properties/3/sync = true
-properties/3/watch = false
 
 [node name="Player" type="CharacterBody2D"]
 scale = Vector2(2, 2)
@@ -177,7 +169,6 @@ rotation = -0.000538441
 shape = SubResource("RectangleShape2D_8jrak")
 
 [node name="Camera2D" type="Camera2D" parent="."]
-visible = false
 
 [node name="PlayerInput" type="Node2D" parent="."]
 position = Vector2(0.5, 0)

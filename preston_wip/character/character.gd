@@ -31,7 +31,9 @@ func _ready():
 	
 #	Input.mouse_mode = Input.MOUSE_MODE_CONFINED
 	
-	if not is_current_player():
+	if is_current_player():
+		camera.make_current()
+	else:
 		$VisionCone2D.hide()
 
 func is_current_player() -> bool:
@@ -42,11 +44,6 @@ func take_hit(hit_pos: Vector2, dmg_location: Health.DamageLocation):
 	health.take_damage(hit_pos, dmg_location)
 	
 func _process(delta):
-	# Check if player shot
-	if input.fired:
-		print("Shot fired by: %s" % player)
-		fired_shot.emit(self)
-
 	# Rotate player to look at mouse
 	global_rotation = input.to_rotation
 	
@@ -64,7 +61,10 @@ func _process(delta):
 
 	move_and_slide()
 	
-#	fog_of_war.update(self)
+	# Check if player shot
+	if input.fired:
+		print("Shot fired by: %s" % player)
+		fired_shot.emit(self)
 
 @rpc("call_local")
 func _on_died():
