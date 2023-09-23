@@ -32,6 +32,9 @@ var line_pos_b = Vector2.ZERO
 
 # Called when the node enters the scene tree for the first time.
 func _ready():
+	# Process after player nodes
+	process_priority = 30
+	
 	# Clients need to be able to track player actions
 	player_spawner.spawned.connect(_track_new_player)
 	
@@ -49,9 +52,6 @@ func _ready():
 	# Spawn a local player unless this is dedicated server
 	if not OS.has_feature("dedicated_server"):
 		add_player(1)
-
-func _process(delta: float):
-	fog_of_war.update(current_character)
 	
 func _exit_tree():
 	if not multiplayer.is_server():
@@ -68,6 +68,7 @@ func add_player(id: int):
 	
 	if id == multiplayer.get_unique_id():
 		current_character = character
+		fog_of_war.tracked_player = current_character
 	
 	$Players.add_child(character, true)
 	
