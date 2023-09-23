@@ -16,6 +16,7 @@ signal fired_shot
 @onready var camera = $Camera2D
 @onready var fog_of_war = $FogOfWar
 
+@export var synced_rotation: float
 @export var player := 1 :
 	set(id):
 		player = id
@@ -45,26 +46,30 @@ func take_hit(hit_pos: Vector2, dmg_location: Health.DamageLocation):
 	
 func _process(delta):
 	# Rotate player to look at mouse
-	global_rotation = input.to_rotation
+	if is_current_player() or multiplayer.is_server():
+		synced_rotation = input.to_rotation
+		if player == 1:
+			print("Player %s: %s" % [player, synced_rotation])
 	
-	# Move player in direction of WASD keys
-	var direction = Vector2(
-		input.direction.x,
-		input.direction.y
-	).normalized()
-	if direction:
-		velocity.x = direction.x * SPEED
-		velocity.y = direction.y * SPEED
-	else:
-		velocity.x = 0
-		velocity.y = 0
-
+		# Move player in direction of WASD keys
+		var direction = Vector2(
+			input.direction.x,
+			input.direction.y
+		).normalized()
+		if direction:
+			velocity.x = direction.x * SPEED
+			velocity.y = direction.y * SPEED
+		else:
+			velocity.x = 0
+			velocity.y = 0
+		
+		# Check if player shot
+		if input.fired:
+			print("Shot fired by: %s" % player)
+			fired_shot.emit(self)
+	
+	rotation = synced_rotation
 	move_and_slide()
-	
-	# Check if player shot
-	if input.fired:
-		print("Shot fired by: %s" % player)
-		fired_shot.emit(self)
 
 @rpc("call_local")
 func _on_died():
