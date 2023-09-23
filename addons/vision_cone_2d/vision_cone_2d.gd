@@ -50,6 +50,9 @@ var _last_redraw_time = 0
 @onready var _angular_delta = _angle / ray_count
 
 func _process(_delta: float) -> void:
+	# Process after the player script
+	process_priority = 20
+	
 	if debug_lines or debug_shape:
 		queue_redraw()
 	

@@ -60,3 +60,7 @@ exit={
 2d_physics/layer_2="Bullets"
 2d_physics/layer_3="Vision Cones"
 2d_physics/layer_4="Walls"
+
+[physics]
+
+common/physics_ticks_per_second=128
