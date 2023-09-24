@@ -14,6 +14,8 @@ var shot_scn = preload("res://effects/shot/shot.tscn")
 @onready var shots_manager := $ShotsManager
 @onready var player_spawner := $PlayerSpawner
 @onready var fog_of_war := $FogOfWar
+@onready var start_positions := $StartPositions
+
 
 var current_character # The character representing our client's player
 
@@ -63,8 +65,9 @@ func add_player(id: int):
 	print("add_player")
 	var character = preload("res://player/player.tscn").instantiate()
 	character.player = id
-	character.position = $StartPosition.position
+	character.position = _get_start_pos().position
 	character.name = str(id)
+	
 	
 	if id == multiplayer.get_unique_id():
 		current_character = character
@@ -151,7 +154,7 @@ func _on_player_died(player: Player):
 func _on_character_death_timer_expired(player: Player):
 	print("Respawn")
 	player.respawn.rpc()
-	player.position = $StartPosition.position
+	player.position = _get_start_pos().position
 
 func debug_print(a, b):
 	var shot = shot_scn.instantiate()
@@ -166,7 +169,9 @@ func _draw_shot_tracer(player_pos: Vector2, shot_pos: Vector2):
 	shot.add_point(player_pos)
 	shot.add_point(shot_pos)
 	add_child(shot)
-	
+
+func _get_start_pos() -> Node2D:
+	return start_positions.get_child(randi_range(0, (start_positions.get_child_count()-1)))
 
 func _draw():
 	draw_circle(circle_pos, 10, Color.RED)
