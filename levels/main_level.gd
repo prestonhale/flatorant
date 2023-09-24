@@ -46,6 +46,7 @@ func _ready():
 	
 	multiplayer.peer_connected.connect(add_player)
 	multiplayer.peer_disconnected.connect(del_player)
+	random_level()
 	
 	# Spawn already connected players
 	for id in multiplayer.get_peers():
@@ -177,6 +178,12 @@ func _draw():
 	draw_circle(circle_pos, 10, Color.RED)
 #	draw_line(line_pos_a, line_pos_b, Color.YELLOW_GREEN, 2)
 	
+func random_level():
+	var rlevel = [preload("res://levels/crab_level.tscn"),preload("res://levels/vanilla_level.tscn")]
+	var i = randi_range(0,rlevel.size()-1)
+	var newlevelr = rlevel[i].instantiate()
+	add_child(newlevelr)
+	move_child(newlevelr,0)
 
 func del_player(id: int):
 	if not $Players.has_node(str(id)):
