@@ -179,7 +179,8 @@ func _draw():
 #	draw_line(line_pos_a, line_pos_b, Color.YELLOW_GREEN, 2)
 	
 func random_level():
-	var rlevel = [preload("res://levels/crab_level.tscn"),preload("res://levels/vanilla_level.tscn")]
+	var rlevel = [preload("res://levels/vanilla_level.tscn")]
+#	var rlevel = [preload("res://levels/crab_level.tscn"),preload("res://levels/vanilla_level.tscn")]
 	var i = randi_range(0,rlevel.size()-1)
 	var newlevelr = rlevel[i].instantiate()
 	add_child(newlevelr)

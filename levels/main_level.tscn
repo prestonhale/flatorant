@@ -24,13 +24,13 @@ spawn_limit = 10
 [node name="StartPositions" type="Node2D" parent="."]
 
 [node name="0" type="Node2D" parent="StartPositions"]
-position = Vector2(1869, 323)
+position = Vector2(1300, 493)
 
 [node name="1" type="Node2D" parent="StartPositions"]
-position = Vector2(1611, 691)
+position = Vector2(1286, 736)
 
 [node name="2" type="Node2D" parent="StartPositions"]
-position = Vector2(1787, 1269)
+position = Vector2(811, 927)
 
 [node name="3" type="Node2D" parent="StartPositions"]
 position = Vector2(276, 209)
