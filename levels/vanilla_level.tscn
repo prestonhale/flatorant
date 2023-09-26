@@ -1,10 +1,9 @@
-[gd_scene load_steps=2 format=3 uid="uid://82pwarqe1fcu"]
+[gd_scene load_steps=2 format=3 uid="uid://c7hbnac7qamb6"]
 
 [ext_resource type="TileSet" uid="uid://01drv1we3pyb" path="res://art/theme_tiles.tres" id="1_f6wql"]
 
 [node name="VanillaLevel" type="TileMap"]
-position = Vector2(0, -2)
-scale = Vector2(2.71025, 1.73858)
+scale = Vector2(2, 2)
 tile_set = ExtResource("1_f6wql")
 cell_quadrant_size = 32
 format = 2

@@ -69,12 +69,14 @@ func add_player(id: int):
 	character.position = _get_start_pos().position
 	character.name = str(id)
 	
-	
 	if id == multiplayer.get_unique_id():
 		current_character = character
 		fog_of_war.tracked_player = current_character
 	
 	$Players.add_child(character, true)
+	
+	character.input.simulation = $Simulation
+	$Simulation.add_player(character)
 	
 	var player_count = $Players.get_child_count() - 1
 #	character.change_color(PLAYER_COLORS[player_count])

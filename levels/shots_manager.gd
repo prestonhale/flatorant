@@ -55,7 +55,7 @@ func on_player_fired_shot(player: Player):
 
 @rpc("call_local")
 func draw_hit_splash(shot_pos: Vector2):
-	print("draw_hit_splash")
+#	print("draw_hit_splash")
 	
 	var splash = splashes.get_child(splash_index)
 	splash.global_position = shot_pos

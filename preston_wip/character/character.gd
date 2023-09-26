@@ -16,7 +16,8 @@ signal fired_shot
 @onready var camera = $Camera2D
 @onready var fog_of_war = $FogOfWar
 
-@export var synced_rotation: float
+var rrotation: float
+
 @export var player := 1 :
 	set(id):
 		player = id
@@ -47,34 +48,20 @@ func take_hit(hit_pos: Vector2, dmg_location: Health.DamageLocation):
 # The simulation for a player only runs locally and on the server
 # This turns "inputs" into player state
 func _simulate():
-	synced_rotation = input.to_rotation
-
-	# Move player in direction of WASD keys
-	var direction = Vector2(
-		input.direction.x,
-		input.direction.y
-	).normalized()
-	if direction:
-		velocity.x = direction.x * SPEED
-		velocity.y = direction.y * SPEED
-	else:
-		velocity.x = 0
-		velocity.y = 0
-	
 	# Check if player shot
 	if input.fired:
-		print("Shot fired by: %s" % player)
+#		print("Shot fired by: %s" % player)
 		fired_shot.emit(self)
 
 # Replicates the players state
 func _process(delta):
+	print(rrotation)
+	rotation = rrotation
+	print(rotation)
 	# The current player and the server run the simulation.
 	# Remote players just have their state sent down by the server.
 	if multiplayer.is_server() or is_current_player():
 		_simulate()
-	
-	rotation = synced_rotation
-	move_and_slide()
 
 @rpc("call_local")
 func _on_died():

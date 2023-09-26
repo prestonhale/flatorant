@@ -1,9 +1,10 @@
-[gd_scene load_steps=7 format=3 uid="uid://cg8euce5i76ue"]
+[gd_scene load_steps=8 format=3 uid="uid://cg8euce5i76ue"]
 
 [ext_resource type="Script" path="res://levels/main_level.gd" id="1_3qp07"]
 [ext_resource type="PackedScene" uid="uid://csldvlhbe3o6" path="res://effects/hit_splash/hit_splash.tscn" id="4_bx0ap"]
 [ext_resource type="Script" path="res://levels/shots_manager.gd" id="4_c03yy"]
 [ext_resource type="Shader" path="res://effects/view_shader/fog.gdshader" id="5_y3ex7"]
+[ext_resource type="Script" path="res://simulation/simulation.gd" id="6_2foaw"]
 [ext_resource type="Script" path="res://player/view_shader.gd" id="7_i4ne7"]
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_3ql3v"]
@@ -84,3 +85,6 @@ grow_vertical = 2
 handle_input_locally = false
 size = Vector2i(100, 100)
 render_target_update_mode = 4
+
+[node name="Simulation" type="Node" parent="."]
+script = ExtResource("6_2foaw")
