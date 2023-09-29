@@ -5,10 +5,6 @@ extends Node2D
 var shot_scn = preload("res://effects/shot/shot.tscn")
 var splash_index = 0
 
-func _ready():
-	var player_spawner = $"../PlayerSpawner"
-	player_spawner.spawned.connect(track_player)
-
 func track_player(player: Player):
 	player.fired_shot.connect(on_player_fired_shot)
 
@@ -51,7 +47,6 @@ func on_player_fired_shot(player: Player):
 		# Hits must be confirmed on the server to be valid
 		if hit_player:
 			hit_player.take_hit.rpc(shot_pos, dmg_location)
-
 
 @rpc("call_local")
 func draw_hit_splash(shot_pos: Vector2):

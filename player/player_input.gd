@@ -9,15 +9,10 @@ var enabled = true
 @export var fired := false
 @export var to_rotation := 0.0
 
-@onready var synchronizer = $PlayerInputSynchronizer
-
 var frame_time: float = 0
-var desired_frame_time: float = 7.8 # 1000ms / 128 ticks
+var desired_frame_time: float = 16.66 # 1000ms / 60 ticks
 #var desired_frame_time: float = 100 # Slow server for testing
 var frame_count: int = 0
-
-var last_sent_rotation
-var last_sent_direction
 
 var simulation: Simulation
 
@@ -25,13 +20,14 @@ var simulation: Simulation
 func _ready():
 	# Always process input first 
 #	process_priority = 1
-	# Allow server (but no other players) to see our inputs
-	synchronizer.set_visibility_for(1, true)
 	
 	# Only process for the local player
+	print(get_multiplayer_authority())
+	print(multiplayer.get_unique_id())
 	var is_our_player = get_multiplayer_authority() == multiplayer.get_unique_id()
 	set_process(is_our_player)
-	print("Accepting input for player: %s" % multiplayer.get_unique_id())
+	if is_our_player:
+		print("Accepting input for player: %s" % multiplayer.get_unique_id())
 	
 
 func _process(delta: float):
@@ -50,13 +46,11 @@ func _process(delta: float):
 	
 	frame_time += (delta * 1000)
 	if frame_time > desired_frame_time:
-		if last_sent_direction != direction:
-			simulation.change_direction.rpc(frame_count, direction)
-			last_sent_direction = direction
-		if last_sent_rotation != to_rotation:
-			print(to_rotation)
-			simulation.change_rotation.rpc(frame_count, to_rotation)
-			last_sent_rotation = to_rotation
+		
+		simulation.change_direction.rpc_id(1, frame_count, direction)
+		
+		simulation.change_rotation.rpc_id(1, frame_count, to_rotation)
+		
 		frame_count += 1
 		frame_time = frame_time - desired_frame_time
 	

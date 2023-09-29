@@ -42,7 +42,7 @@ func _ready():
 	mask_image.fill(Color.BLACK)
 	mask_texture = ImageTexture.create_from_image(mask_image)
 
-func _process(delta: float):
+func _process(_delta: float):
 	var player
 	if not tracked_player:
 		return

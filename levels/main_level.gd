@@ -9,13 +9,13 @@ const SPAWN_RANDOM = 5.0
 var shot_scn = preload("res://effects/shot/shot.tscn")
 
 @onready var players := $Players
-@onready var debug_drawer := $DebugDrawer
 @onready var ray := $RayCast2D
 @onready var shots_manager := $ShotsManager
-@onready var player_spawner := $PlayerSpawner
 @onready var fog_of_war := $FogOfWar
 @onready var start_positions := $StartPositions
+@onready var simulation := $Simulation
 
+var ready_to_simulate = false
 
 var current_character # The character representing our client's player
 
@@ -36,49 +36,74 @@ var line_pos_b = Vector2.ZERO
 func _ready():
 	# Process after player nodes
 #	process_priority = 30
+
+	for player in MultiplayerLobby.players.values():
+		add_player(player["id"])
 	
-	# Clients need to be able to track player actions
-	player_spawner.spawned.connect(_track_new_player)
+	MultiplayerLobby.player_connected.connect(_on_player_connected)
+	simulation.main_level = self
 	
-	# Server only beyond this point	
-	if not multiplayer.is_server():
-		return
-	
-	multiplayer.peer_connected.connect(add_player)
-	multiplayer.peer_disconnected.connect(del_player)
+#	multiplayer.connected_to_server.connect(on_connected_to_server)
 	random_level()
+#
+#	# The connected_to_server signal doesn't run on server so run manually
+#	if multiplayer.is_server():
+#		multiplayer.peer_connected.connect(_on_server_peer_connected)
+#		multiplayer.peer_disconnected.connect(_on_server_peer_disconnected)
+#
+#	# The dedicated server doesn't spawn a player
+#	if multiplayer.is_server() and not OS.has_feature("dedicated_server"):
+#		add_player(multiplayer.get_unique_id())
+	ready_to_simulate = true
+
+func on_connected_to_server():
+	print("Connect to server")
 	
-	# Spawn already connected players
-	for id in multiplayer.get_peers():
-		add_player(id)
+	ready_to_simulate = true
+
+func _on_player_connected(new_player_id: int, new_player_info: Dictionary):
+	print("Added peer: %d" % new_player_id)
+	add_player(new_player_id)
+
+func _on_server_peer_connected(id: int):
+	# Tell all peers to spawn the character
+	add_player.rpc(id)
 	
-	# Spawn a local player unless this is dedicated server
-	if not OS.has_feature("dedicated_server"):
-		add_player(1)
+	# Tell the new player about the current server state
+	var peer_ids := [1]
+	for player in $Players.get_children():
+		peer_ids.append(player.player)
+	print("-----------")
+	setup_new_player.rpc_id(id, peer_ids)
+
+func _on_server_peer_disconnected(id: int):
+	del_player.rpc(id)
+
+@rpc("reliable")
+func setup_new_player(peer_ids: Array[int]):
+	print("==== %s" % peer_ids)
+	for peer_id in peer_ids:
+		add_player(peer_id) # Not an RPC
 	
 func _exit_tree():
 	if not multiplayer.is_server():
 		return
-	multiplayer.peer_connected.disconnect(add_player)
-	multiplayer.peer_disconnected.disconnect(del_player)
-	
+	multiplayer.peer_connected.disconnect(_on_server_peer_connected)
+	multiplayer.peer_disconnected.disconnect(_on_server_peer_disconnected)
+
+@rpc("reliable", "call_local")
 func add_player(id: int):
-	print("add_player")
+	print("add_player: %d" % id)
 	var character = preload("res://player/player.tscn").instantiate()
 	character.player = id
 	character.position = _get_start_pos().position
 	character.name = str(id)
-	
-	if id == multiplayer.get_unique_id():
-		current_character = character
-		fog_of_war.tracked_player = current_character
-	
 	$Players.add_child(character, true)
 	
-	character.input.simulation = $Simulation
-	$Simulation.add_player(character)
+	simulation.add_player(character)
+	character.input.simulation = simulation
 	
-	var player_count = $Players.get_child_count() - 1
+#	var player_count = $Players.get_child_count() - 1
 #	character.change_color(PLAYER_COLORS[player_count])
 
 	# Capture important signals from this player
@@ -88,12 +113,55 @@ func add_player(id: int):
 #	character.vision_cone_area.body_exited.connect(
 #		func(other_player: Node2D): _on_vision_cone_body_exited(character, other_player)
 #	)
-	character.fired_shot.connect(
-		shots_manager.on_player_fired_shot)
+#	character.fired_shot.connect(
+#		shots_manager.on_player_fired_shot)
+#
+#	character.health.died.connect(
+#		func(): _on_player_died(character))
+#
+	# Fog of war follows only our character
+	if id == multiplayer.get_unique_id():
+		current_character = character
+		fog_of_war.tracked_player = current_character
+
+@rpc("reliable", "call_local")
+func del_player(id: int):
+	if simulation:
+		simulation.del_player(id)
 		
-	character.health.died.connect(
-		func(): _on_player_died(character))
+	if not $Players.has_node(str(id)):
+		return
+		
+	$Players.get_node(str(id)).queue_free()
+
+@rpc("call_local", "unreliable")
+func receive_snapshot(snapshot: Dictionary):
+	if not ready_to_simulate:
+		return 
+		
+	if multiplayer.is_server():
+		return # The server has already updated its simulation
 	
+	var player_ids = []
+	for player in players.get_children():
+		player_ids.append(int(str(player.name)))
+	
+	var player_snapshot_data = snapshot["players"]
+	for player_id in player_snapshot_data:
+		if player_id not in player_ids:
+			print("ERROR: Got a simulation frame for a player we don't know about: %s" % player_id)
+			print(player_ids)
+			continue
+		var player = players.get_node(str(player_id))
+		var player_data = player_snapshot_data[player_id]
+		
+#		print("SNAPSHOT PLAYER %d: %s" % [player_id, player_data])
+		
+#		print(players.get_children())
+		# Set the player's position to render
+		player.position = player_data["position"]
+		player.rotation = player_data["rotation"]
+
 # Hook up the player to all the systems that track their actions
 func _track_new_player(player: Player):
 	if player.player == multiplayer.get_unique_id():
@@ -116,7 +184,6 @@ func _on_vision_cone_body_exited(player: Player, other_player: Node2D):
 func _on_character_fired_shot(player_pos: Vector2, shot_pos: Vector2):
 	# Cast rays to get entry aand exit points of all view cones it passes through
 	var cones = {} # PlayerId -> [EntryVec, ExitVec]
-	var points = []
 	
 	# Cast ray forwards to get entry points
 	ray.position = player_pos
@@ -187,13 +254,8 @@ func random_level():
 	var newlevelr = rlevel[i].instantiate()
 	add_child(newlevelr)
 	move_child(newlevelr,0)
-
-func del_player(id: int):
-	if not $Players.has_node(str(id)):
-		return
-	$Players.get_node(str(id)).queue_free()
 	
-func _unhandled_input(event: InputEvent):
+func _unhandled_input(_event: InputEvent):
 	if Input.is_action_just_pressed("exit"):
 		get_tree().quit()
 	

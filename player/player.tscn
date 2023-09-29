@@ -1,24 +1,10 @@
-[gd_scene load_steps=11 format=3 uid="uid://b001tvur7jlkr"]
+[gd_scene load_steps=9 format=3 uid="uid://b001tvur7jlkr"]
 
 [ext_resource type="Script" path="res://preston_wip/character/character.gd" id="1_vid82"]
 [ext_resource type="Texture2D" uid="uid://ba6q8s83isana" path="res://art/crab.png" id="2_f4qvb"]
 [ext_resource type="PackedScene" uid="uid://kf8tqdlm8c5t" path="res://addons/vision_cone_2d/vision_cone_2d_template.tscn" id="3_lt0ua"]
 [ext_resource type="Script" path="res://player/health.gd" id="3_s6xvg"]
 [ext_resource type="Script" path="res://player/player_input.gd" id="4_3clxj"]
-
-[sub_resource type="SceneReplicationConfig" id="SceneReplicationConfig_fii6g"]
-properties/0/path = NodePath(".:player")
-properties/0/spawn = true
-properties/0/sync = true
-properties/0/watch = false
-properties/1/path = NodePath("PlayerSprite2D:modulate")
-properties/1/spawn = true
-properties/1/sync = true
-properties/1/watch = false
-properties/2/path = NodePath("PlayerSprite2D:visible")
-properties/2/spawn = true
-properties/2/sync = false
-properties/2/watch = false
 
 [sub_resource type="CapsuleShape2D" id="CapsuleShape2D_vsdfj"]
 radius = 7.0
@@ -29,20 +15,6 @@ size = Vector2(13, 37.9975)
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_8jrak"]
 size = Vector2(8.99946, 16)
-
-[sub_resource type="SceneReplicationConfig" id="SceneReplicationConfig_ms0hk"]
-properties/0/path = NodePath(".:direction")
-properties/0/spawn = true
-properties/0/sync = true
-properties/0/watch = false
-properties/1/path = NodePath(".:fired")
-properties/1/spawn = true
-properties/1/sync = true
-properties/1/watch = false
-properties/2/path = NodePath(".:to_rotation")
-properties/2/spawn = true
-properties/2/sync = true
-properties/2/watch = false
 
 [node name="Player" type="CharacterBody2D"]
 scale = Vector2(2, 2)
@@ -114,9 +86,6 @@ color = Color(0.968627, 0, 0.215686, 1)
 wait_time = 2.0
 one_shot = true
 
-[node name="ServerSynchronizer" type="MultiplayerSynchronizer" parent="."]
-replication_config = SubResource("SceneReplicationConfig_fii6g")
-
 [node name="VisionCone2D" parent="." instance=ExtResource("3_lt0ua")]
 rotation = -1.5708
 angle_deg = 60
@@ -169,9 +138,5 @@ shape = SubResource("RectangleShape2D_8jrak")
 [node name="PlayerInput" type="Node2D" parent="."]
 position = Vector2(0.5, 0)
 script = ExtResource("4_3clxj")
-
-[node name="PlayerInputSynchronizer" type="MultiplayerSynchronizer" parent="PlayerInput"]
-replication_config = SubResource("SceneReplicationConfig_ms0hk")
-public_visibility = false
 
 [editable path="VisionCone2D"]

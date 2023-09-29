@@ -18,7 +18,7 @@ var players = {}
 # This is the local player info. This should be modified locally before the connection is made.
 # It will be passed to every other peer.
 # For example, the value of "name" can be set to something the player entered in a UI scene.
-var player_info = {"name": "Name"}
+var player_info = {"name": "Name", "id": -1}
 
 var players_loaded = 0
 
@@ -32,6 +32,7 @@ func _ready():
 
 
 func join_game(address = ""):
+	print("Joining multiplayer server.")
 	if address == "":
 		address = DEFAULT_SERVER_IP
 	var peer = ENetMultiplayerPeer.new()
@@ -39,17 +40,27 @@ func join_game(address = ""):
 	if error:
 		return error
 	multiplayer.multiplayer_peer = peer
+	
+	player_info["name"] = "Jarnathan"
+	player_info["id"] = multiplayer.get_unique_id()
+	
+	load_level("res://levels/main_level.tscn")
 
 
 func create_game():
+	print("Creating multiplayer server.")
 	var peer = ENetMultiplayerPeer.new()
 	var error = peer.create_server(PORT, MAX_CONNECTIONS)
 	if error:
 		return error
 	multiplayer.multiplayer_peer = peer
 
+	player_info["name"] = "server"
+	player_info["id"] = 1
 	players[1] = player_info
 	player_connected.emit(1, player_info)
+	
+	load_level("res://levels/main_level.tscn")
 
 
 func remove_multiplayer_peer():
@@ -58,8 +69,14 @@ func remove_multiplayer_peer():
 
 # When the server decides to start the game from a UI scene, do Lobby.load_game.rpc(filepath)
 @rpc("call_local", "reliable")
-func load_game(game_scene_path):
-	get_tree().change_scene_to_file(game_scene_path)
+func load_level(game_scene_path: String):
+	# Remove old level if any.
+	var level = $/root/Game/Level
+	for c in level.get_children():
+		level.remove_child(c)
+		c.queue_free()
+	# Add new level.
+	level.add_child(load(game_scene_path).instantiate())
 
 
 # Every peer will call this when they have loaded the game scene.
