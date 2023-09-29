@@ -10,8 +10,8 @@ var enabled = true
 @export var to_rotation := 0.0
 
 var frame_time: float = 0
-var desired_frame_time: float = 16.66 # 1000ms / 60 ticks
-#var desired_frame_time: float = 100 # Slow server for testing
+#var desired_frame_time: float = 16.66 # 1000ms / 60 ticks
+var desired_frame_time: float = 100 # Slow server for testing
 var frame_count: int = 0
 
 var simulation: Simulation
@@ -48,7 +48,6 @@ func _process(delta: float):
 	if frame_time > desired_frame_time:
 		
 		simulation.change_direction.rpc_id(1, frame_count, direction)
-		
 		simulation.change_rotation.rpc_id(1, frame_count, to_rotation)
 		
 		frame_count += 1

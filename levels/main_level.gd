@@ -94,13 +94,10 @@ func del_player(id: int):
 		
 	$Players.get_node(str(id)).queue_free()
 
-@rpc("call_local", "unreliable")
+@rpc("unreliable")
 func receive_snapshot(snapshot: Dictionary):
 	if not ready_to_simulate:
 		return 
-		
-	if multiplayer.is_server():
-		return # The server has already updated its simulation
 	
 	var player_ids = []
 	for player in players.get_children():

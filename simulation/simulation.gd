@@ -24,8 +24,8 @@ var frame_buffer_head = 0
 
 # Accrued time since we last simulated
 var frame_time: float = 0
-#var desired_frame_time: float = 100 # Slow server for testing
-var desired_frame_time: float = 16.66 # 1000ms / 60 ticks
+var desired_frame_time: float = 100 # Slow server for testing
+#var desired_frame_time: float = 16.66 # 1000ms / 60 ticks
 
 # A reference to the main_level which is responsible to displaying the snapshot
 var main_level: MainLevel
@@ -33,36 +33,11 @@ var main_level: MainLevel
 # Simulated players; player_id -> player
 var simulated_players = {}
 
-enum PlayerInputType {
-	DIRECTION,
-	ROTATION,
-	FIRE_GUN,
-}
-
-class PlayerInput:
-	var input_type: PlayerInputType
-	var player: CharacterBody2D
-	var direction: Vector2
-	var rotation: float
-	
-	static func create(
-			player: CharacterBody2D,
-			input_type: PlayerInputType,
-			direction: Vector2 = Vector2.ZERO,
-			rotation: float = 0.0,
-		):
-		var player_input = PlayerInput.new()
-		player_input.player = player
-		player_input.input_type = input_type
-		player_input.direction = direction
-		player_input.rotation = rotation
-		return player_input
-
 func _ready():
-	if not multiplayer.is_server():
-		set_process(false)
-		set_physics_process(false)
-		return
+#	if not multiplayer.is_server():
+#		set_process(false)
+#		set_physics_process(false)
+#		return
 		
 	frame_buffer.resize(20)
 	frame_buffer.fill([])
@@ -72,10 +47,15 @@ func _physics_process(delta: float):
 	
 	frame_time += (delta * 1000)
 	
-	# TODO: Is this actually a feasible solution?
+	var snapshot = simulate()
+	
+	# Only save and send the snapshot on server ticks
 	if frame_time > desired_frame_time:
-		simulate()
+#		print("snap send")
+		main_level.receive_snapshot.rpc(snapshot)
+		
 		frame_time = frame_time - desired_frame_time
+		current_frame += 1
 
 # Called by the server, adds a simulated player
 func add_player(player: Player):
@@ -91,7 +71,7 @@ func change_direction(_frame_sent: int, direction: Vector2):
 	var player_id = int(multiplayer.get_remote_sender_id())
 	player_inputs.append(PlayerInput.create(
 		simulated_players[player_id],
-		PlayerInputType.DIRECTION,
+		PlayerInput.PlayerInputType.DIRECTION,
 		direction, # direction
 	))
 
@@ -108,7 +88,7 @@ func handle_direction_input(input: PlayerInput):
 func change_rotation(_frame_sent: int, rotation: float):
 	player_inputs.append(PlayerInput.create(
 		simulated_players[multiplayer.get_remote_sender_id()],
-		PlayerInputType.ROTATION,
+		PlayerInput.PlayerInputType.ROTATION,
 		Vector2.ZERO, #direction
 		rotation, # rotation
 	))
@@ -120,7 +100,7 @@ func handle_rotation_input(input: PlayerInput):
 func fire_gun(_frame_sent: int):
 	player_inputs.append(PlayerInput.create(
 		simulated_players[multiplayer.get_remote_sender_id()],
-		PlayerInputType.FIRE_GUN
+		PlayerInput.PlayerInputType.FIRE_GUN
 	))
 
 func handle_fire_gun(_input: PlayerInput):
@@ -156,15 +136,13 @@ func simulate():
 			"rotation": player.rotation
 		}
 	
-	main_level.receive_snapshot.rpc(snapshot)
-	
-	current_frame += 1
+	return snapshot
 	
 func apply_input_to_simulation(input: PlayerInput):
 	match input.input_type:
-		PlayerInputType.DIRECTION:
+		PlayerInput.PlayerInputType.DIRECTION:
 			handle_direction_input(input)
-		PlayerInputType.ROTATION:
+		PlayerInput.PlayerInputType.ROTATION:
 			handle_rotation_input(input)
-		PlayerInputType.FIRE_GUN:
+		PlayerInput.PlayerInputType.FIRE_GUN:
 			handle_fire_gun(input)
