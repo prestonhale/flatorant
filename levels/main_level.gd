@@ -43,53 +43,13 @@ func _ready():
 	MultiplayerLobby.player_connected.connect(_on_player_connected)
 	simulation.main_level = self
 	
-#	multiplayer.connected_to_server.connect(on_connected_to_server)
 	random_level()
 #
-#	# The connected_to_server signal doesn't run on server so run manually
-#	if multiplayer.is_server():
-#		multiplayer.peer_connected.connect(_on_server_peer_connected)
-#		multiplayer.peer_disconnected.connect(_on_server_peer_disconnected)
-#
-#	# The dedicated server doesn't spawn a player
-#	if multiplayer.is_server() and not OS.has_feature("dedicated_server"):
-#		add_player(multiplayer.get_unique_id())
-	ready_to_simulate = true
-
-func on_connected_to_server():
-	print("Connect to server")
-	
 	ready_to_simulate = true
 
 func _on_player_connected(new_player_id: int, new_player_info: Dictionary):
 	print("Added peer: %d" % new_player_id)
 	add_player(new_player_id)
-
-func _on_server_peer_connected(id: int):
-	# Tell all peers to spawn the character
-	add_player.rpc(id)
-	
-	# Tell the new player about the current server state
-	var peer_ids := [1]
-	for player in $Players.get_children():
-		peer_ids.append(player.player)
-	print("-----------")
-	setup_new_player.rpc_id(id, peer_ids)
-
-func _on_server_peer_disconnected(id: int):
-	del_player.rpc(id)
-
-@rpc("reliable")
-func setup_new_player(peer_ids: Array[int]):
-	print("==== %s" % peer_ids)
-	for peer_id in peer_ids:
-		add_player(peer_id) # Not an RPC
-	
-func _exit_tree():
-	if not multiplayer.is_server():
-		return
-	multiplayer.peer_connected.disconnect(_on_server_peer_connected)
-	multiplayer.peer_disconnected.disconnect(_on_server_peer_disconnected)
 
 @rpc("reliable", "call_local")
 func add_player(id: int):
@@ -155,9 +115,6 @@ func receive_snapshot(snapshot: Dictionary):
 		var player = players.get_node(str(player_id))
 		var player_data = player_snapshot_data[player_id]
 		
-#		print("SNAPSHOT PLAYER %d: %s" % [player_id, player_data])
-		
-#		print(players.get_children())
 		# Set the player's position to render
 		player.position = player_data["position"]
 		player.rotation = player_data["rotation"]
