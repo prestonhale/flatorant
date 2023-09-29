@@ -37,11 +37,12 @@ func _ready():
 	# Process after player nodes
 #	process_priority = 30
 
+	simulation.main_level = self
+
 	for player in MultiplayerLobby.players.values():
 		add_player(player["id"])
 	
 	MultiplayerLobby.player_connected.connect(_on_player_connected)
-	simulation.main_level = self
 	
 	random_level()
 #
@@ -54,15 +55,10 @@ func _on_player_connected(new_player_id: int, new_player_info: Dictionary):
 @rpc("reliable", "call_local")
 func add_player(id: int):
 	print("add_player: %d" % id)
-	var character = preload("res://player/player.tscn").instantiate()
-	character.player = id
-	character.position = _get_start_pos().position
-	character.name = str(id)
-	$Players.add_child(character, true)
+	position = _get_start_pos().position
 	
-	simulation.add_player(character)
-	character.input.simulation = simulation
-	
+	var player = simulation.add_simulated_player(id, position, 0)
+
 #	var player_count = $Players.get_child_count() - 1
 #	character.change_color(PLAYER_COLORS[player_count])
 
@@ -70,18 +66,17 @@ func add_player(id: int):
 #	character.vision_cone_area.body_entered.connect(
 #		func(other_player: Node2D): _on_vision_cone_body_entered(character, other_player)
 #	)
+
 #	character.vision_cone_area.body_exited.connect(
 #		func(other_player: Node2D): _on_vision_cone_body_exited(character, other_player)
 #	)
-#	character.fired_shot.connect(
-#		shots_manager.on_player_fired_shot)
-#
+
 #	character.health.died.connect(
 #		func(): _on_player_died(character))
 #
 	# Fog of war follows only our character
 	if id == multiplayer.get_unique_id():
-		current_character = character
+		current_character = player as Player
 		fog_of_war.tracked_player = current_character
 
 @rpc("reliable", "call_local")
@@ -94,9 +89,8 @@ func del_player(id: int):
 		
 	$Players.get_node(str(id)).queue_free()
 
-# Called locally and via rpc from server
-@rpc("unreliable")
-func receive_snapshot(snapshot: Dictionary):
+# State should not change here, this function is about DISPLAYING the state
+func _process(delta: float):
 	if not ready_to_simulate:
 		return 
 	
@@ -104,20 +98,7 @@ func receive_snapshot(snapshot: Dictionary):
 	for player in players.get_children():
 		player_ids.append(int(str(player.name)))
 	
-	var player_snapshot_data = snapshot["players"]
-	for player_id in player_snapshot_data:
-		if player_id not in player_ids:
-			print("ERROR: Got a simulation frame for a player we don't know about: %s" % player_id)
-			print(player_ids)
-			continue
-		var player = players.get_node(str(player_id))
-		var player_data = player_snapshot_data[player_id]
-		
-		# Set the player's position to render
-		player.position = player_data["position"]
-		player.rotation = player_data["rotation"]
-	
-	for tracer in snapshot["tracers"]:
+	for tracer in simulation.simulated_tracers.get_children():
 		_draw_shot_tracer(
 			tracer["start"],
 			tracer["end"]

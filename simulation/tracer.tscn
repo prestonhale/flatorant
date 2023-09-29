@@ -1,0 +1,19 @@
+[gd_scene load_steps=2 format=3 uid="uid://wkesjj41i0do"]
+
+[sub_resource type="GDScript" id="GDScript_2ytio"]
+script/source = "extends RayCast2D
+
+func _ready():
+	$Timer.timeout.connect(queue_free)
+	set_physics_process(false)
+"
+
+[node name="Tracer" type="RayCast2D"]
+target_position = Vector2(0, 2000)
+collision_mask = 10
+collide_with_areas = true
+script = SubResource("GDScript_2ytio")
+
+[node name="Timer" type="Timer" parent="."]
+one_shot = true
+autostart = true

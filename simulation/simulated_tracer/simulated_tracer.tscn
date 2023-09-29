@@ -1,0 +1,11 @@
+[gd_scene load_steps=2 format=3 uid="uid://hdkqmheij6ki"]
+
+[ext_resource type="Script" path="res://simulation/simulated_tracer/simulated_tracer.gd" id="1_tsivg"]
+
+[node name="SimulatedTracer" type="Node2D"]
+script = ExtResource("1_tsivg")
+
+[node name="Timer" type="Timer" parent="."]
+wait_time = 0.1
+one_shot = true
+autostart = true

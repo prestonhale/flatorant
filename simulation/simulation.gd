@@ -9,7 +9,8 @@ class_name Simulation
 # The server is perpetually BEHIND the client view by the length of the buffer.
 # This is to give players inputs time to reach the server and be processed.
 
-var tracer_scn = preload("res://simulation/simulated_tracer.tscn")
+var tracer_scn = preload("res://simulation/simulated_tracer/simulated_tracer.tscn")
+var player_scn = preload("res://player/player.tscn")
 
 # The current frame on the server
 var current_frame = 0
@@ -38,6 +39,7 @@ var main_level: MainLevel
 
 # Simulated players; player_id -> player
 var simulated_players = {}
+@onready var simulated_tracers = $SimulatedTracers
 
 func _ready():
 	frame_buffer.resize(20)
@@ -49,7 +51,6 @@ func _physics_process(delta: float):
 	frame_time += (delta * 1000)
 	
 	var snapshot = simulate(delta)
-	main_level.receive_snapshot(snapshot)
 	
 	# Only save and send the snapshot on server ticks
 	if multiplayer.is_server():
@@ -61,20 +62,75 @@ func update_client_snapshots(delta: float, snapshot: Dictionary):
 	frame_time += (delta * 1000)
 	if frame_time > desired_frame_time:
 #		print("snap send")
-		main_level.receive_snapshot.rpc(snapshot)
+		reconcile.rpc(snapshot)
 		
 		frame_time = frame_time - desired_frame_time
 		current_frame += 1
 
-# Called by the server, adds a simulated player
-func add_player(player: Player):
-	print("Adding player to simulation %d" % player.player)
-	simulated_players[player.player] = player
+# Update the state of the simulation to match a given snapshot
+@rpc("unreliable")
+func reconcile(snapshot: Dictionary):
+	reconcile_players(snapshot["players"])
+	
+	# Brute force recreate tracers
+	for tracer in simulated_tracers.get_children():
+		remove_simulated_tracer(tracer)
+	for tracer in snapshot["tracers"]:
+		add_simulated_tracer(tracer["start"], tracer["end"])
 
-func del_player(player_id: int):
-	print("Removing player from simulation %d" % player_id)
-	simulated_players.erase(player_id)
 
+# ========== Tracer ==========
+func add_simulated_tracer(start: Vector2, end: Vector2):
+	var tracer = tracer_scn.instantiate()
+	tracer.start = start
+	tracer.end = end
+	simulated_tracers.add_child(tracer)
+
+func remove_simulated_tracer(tracer: SimulatedTracer):
+	tracer.queue_free()
+	simulated_tracers.remove_child(tracer)
+
+
+# ========== Player ==========
+# Brings the server and client simulated players into sync
+func reconcile_players(player_snapshot_data: Dictionary): 
+#	for player_id in simulated_players.keys():
+#		if player_id not in player_snapshot_data.keys():
+#			remove_simulated_player(simulated_players[player_id])
+			
+	for player_id in player_snapshot_data.keys():
+		if player_id not in simulated_players.keys():
+			var player_data = player_snapshot_data[player_id]
+			add_simulated_player(player_id, player_data.position, player_data.rotation)
+		
+	for player_id in player_snapshot_data:
+		var player = simulated_players[player_id]
+		reconcile_player(player, player_snapshot_data[player_id])
+
+func reconcile_player(player: Player, player_data: Dictionary):
+	player.position = player_data.position
+	player.rotation = player_data.rotation
+
+func add_simulated_player(player_id: int, position: Vector2, rotation: float) -> Player:
+	print("Adding player to simulation %d" % player_id)
+	var player = player_scn.instantiate()
+	simulated_players[player_id] = player
+	player.position = position
+	player.rotation = rotation
+	player.player = player_id
+	player.name = str(player_id)
+	main_level.players.add_child(player)
+	player.input.simulation = self
+	return player
+
+func remove_simulated_player(player: Player):
+	print("Removing player from simulation %d" % player.player)
+	simulated_players.erase(player.player)
+	main_level.players.remove_child(player)
+	player.queue_free()
+
+
+# =========== Player Input ===========
 @rpc("unreliable", "any_peer")
 func accept_player_input(player_input: Dictionary):
 #	print("Input from %d" % player_input.player_id)
@@ -105,10 +161,7 @@ func handle_fire_gun(input: Dictionary):
 		var collision_point = ray.get_collision_point()
 		ray.enabled = false
 		
-		var tracer = tracer_scn.instantiate()
-		tracer.start = player.position
-		tracer.end = collision_point
-		$SimulatedTracers.add_child(tracer)
+		add_simulated_tracer(player.position, collision_point)
 
 func simulate(delta: float):
 	# Process all player inputs (updating the simulation as we go) in order received
