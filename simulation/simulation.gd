@@ -24,8 +24,8 @@ var frame_buffer_head = 0
 
 # Accrued time since we last simulated
 var frame_time: float = 0
-var desired_frame_time: float = 100 # Slow server for testing
-#var desired_frame_time: float = 16.66 # 1000ms / 60 ticks
+#var desired_frame_time: float = 100 # Slow server for testing
+var desired_frame_time: float = 16.66 # 1000ms / 60 ticks
 
 # A reference to the main_level which is responsible to displaying the snapshot
 var main_level: MainLevel
@@ -34,11 +34,11 @@ var main_level: MainLevel
 var simulated_players = {}
 
 func _ready():
-#	if not multiplayer.is_server():
-#		set_process(false)
-#		set_physics_process(false)
-#		return
-		
+	if not multiplayer.is_server():
+		set_process(false)
+		set_physics_process(false)
+		return
+
 	frame_buffer.resize(20)
 	frame_buffer.fill([])
 	
@@ -67,44 +67,23 @@ func del_player(player_id: int):
 	simulated_players.erase(player_id)
 
 @rpc("unreliable", "any_peer", "call_local")
-func change_direction(_frame_sent: int, direction: Vector2):
-	var player_id = int(multiplayer.get_remote_sender_id())
-	player_inputs.append(PlayerInput.create(
-		simulated_players[player_id],
-		PlayerInput.PlayerInputType.DIRECTION,
-		direction, # direction
-	))
+func accept_player_input(player_input: Dictionary):
+#	print("Input from %d" % player_input.player_id)
+	player_inputs.append(player_input)
 
-func handle_direction_input(input: PlayerInput):
+func handle_direction_input(input: Dictionary):
 	var direction = Vector2(
 		input.direction.x,
 		input.direction.y
 	).normalized()
-	input.player.velocity.x = direction.x * 400
-	input.player.velocity.y = direction.y * 400
-	input.player.move_and_slide()
+	var player = simulated_players[input.player_id]
+	player.velocity.x = direction.x * 400
+	player.velocity.y = direction.y * 400
+	player.move_and_slide()
 
-@rpc("unreliable", "any_peer", "call_local")
-func change_rotation(_frame_sent: int, rotation: float):
-	player_inputs.append(PlayerInput.create(
-		simulated_players[multiplayer.get_remote_sender_id()],
-		PlayerInput.PlayerInputType.ROTATION,
-		Vector2.ZERO, #direction
-		rotation, # rotation
-	))
-
-func handle_rotation_input(input: PlayerInput):
-	input.player.rotation = input.rotation
-
-@rpc("reliable", "any_peer", "call_local")
-func fire_gun(_frame_sent: int):
-	player_inputs.append(PlayerInput.create(
-		simulated_players[multiplayer.get_remote_sender_id()],
-		PlayerInput.PlayerInputType.FIRE_GUN
-	))
-
-func handle_fire_gun(_input: PlayerInput):
-	pass
+func handle_rotation_input(input: Dictionary):
+	var player = simulated_players[input.player_id]
+	player.rotation = input.rotation
 
 func simulate():
 	# Process all player inputs (updating the simulation as we go) in order received
@@ -116,13 +95,12 @@ func simulate():
 	
 	for i in range(input_size):
 		# We need to reverse through the array to get inputs in the order they were received
-		var cur_input: PlayerInput = inputs_this_frame[input_size-i-1]
+		var cur_input: Dictionary = inputs_this_frame[input_size-i-1]
 		
 		# Skip players who have since disconnected
-		if cur_input.player.player not in simulated_players:
+		if cur_input["player_id"] not in simulated_players:
 			continue
 		
-#		print("\tProcessing input of type: %s" % cur_input.input_type)
 		apply_input_to_simulation(cur_input)
 	
 	# The current, full, state of the server simulation
@@ -138,11 +116,7 @@ func simulate():
 	
 	return snapshot
 	
-func apply_input_to_simulation(input: PlayerInput):
-	match input.input_type:
-		PlayerInput.PlayerInputType.DIRECTION:
-			handle_direction_input(input)
-		PlayerInput.PlayerInputType.ROTATION:
-			handle_rotation_input(input)
-		PlayerInput.PlayerInputType.FIRE_GUN:
-			handle_fire_gun(input)
+func apply_input_to_simulation(input: Dictionary):
+	handle_direction_input(input)
+	handle_rotation_input(input)
+#	handle_fire_gun(input)
