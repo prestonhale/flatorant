@@ -94,6 +94,7 @@ func del_player(id: int):
 		
 	$Players.get_node(str(id)).queue_free()
 
+# Called locally and via rpc from server
 @rpc("unreliable")
 func receive_snapshot(snapshot: Dictionary):
 	if not ready_to_simulate:

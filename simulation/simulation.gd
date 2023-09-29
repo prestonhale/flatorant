@@ -33,12 +33,9 @@ var main_level: MainLevel
 # Simulated players; player_id -> player
 var simulated_players = {}
 
-func _ready():
-	if not multiplayer.is_server():
-		set_process(false)
-		set_physics_process(false)
-		return
+@export var player_speed = 200
 
+func _ready():
 	frame_buffer.resize(20)
 	frame_buffer.fill([])
 	
@@ -47,9 +44,15 @@ func _physics_process(delta: float):
 	
 	frame_time += (delta * 1000)
 	
-	var snapshot = simulate()
+	var snapshot = simulate(delta)
+	main_level.receive_snapshot(snapshot)
 	
 	# Only save and send the snapshot on server ticks
+	if multiplayer.is_server():
+		update_client_snapshots(delta, snapshot)
+
+func update_client_snapshots(delta: float, snapshot: Dictionary):
+	frame_time += (delta * 1000)
 	if frame_time > desired_frame_time:
 #		print("snap send")
 		main_level.receive_snapshot.rpc(snapshot)
@@ -66,16 +69,16 @@ func del_player(player_id: int):
 	print("Removing player from simulation %d" % player_id)
 	simulated_players.erase(player_id)
 
-@rpc("unreliable", "any_peer", "call_local")
+@rpc("unreliable", "any_peer")
 func accept_player_input(player_input: Dictionary):
 #	print("Input from %d" % player_input.player_id)
 	player_inputs.append(player_input)
 
-func handle_direction_input(input: Dictionary):
+func handle_direction_input(input: Dictionary, delta: float):
 	var direction = Vector2(
 		input.direction.x,
 		input.direction.y
-	).normalized()
+	).normalized() * delta * player_speed
 	var player = simulated_players[input.player_id]
 	player.velocity.x = direction.x * 400
 	player.velocity.y = direction.y * 400
@@ -85,7 +88,7 @@ func handle_rotation_input(input: Dictionary):
 	var player = simulated_players[input.player_id]
 	player.rotation = input.rotation
 
-func simulate():
+func simulate(delta: float):
 	# Process all player inputs (updating the simulation as we go) in order received
 	var input_size = player_inputs.size()
 	var inputs_this_frame = player_inputs.duplicate()
@@ -101,7 +104,7 @@ func simulate():
 		if cur_input["player_id"] not in simulated_players:
 			continue
 		
-		apply_input_to_simulation(cur_input)
+		apply_input_to_simulation(cur_input, delta)
 	
 	# The current, full, state of the server simulation
 	var snapshot = {}
@@ -116,7 +119,7 @@ func simulate():
 	
 	return snapshot
 	
-func apply_input_to_simulation(input: Dictionary):
-	handle_direction_input(input)
+func apply_input_to_simulation(input: Dictionary, delta: float):
+	handle_direction_input(input, delta)
 	handle_rotation_input(input)
 #	handle_fire_gun(input)

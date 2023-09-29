@@ -22,8 +22,6 @@ func _ready():
 #	process_priority = 1
 	
 	# Only process for the local player
-	print(get_multiplayer_authority())
-	print(multiplayer.get_unique_id())
 	var is_our_player = get_multiplayer_authority() == multiplayer.get_unique_id()
 	set_process(is_our_player)
 	if is_our_player:
@@ -47,10 +45,17 @@ func _process(delta: float):
 	var player_input = {
 		"player_id": get_parent().player,
 		"direction": direction,
-		"rotation": to_rotation
+		"rotation": to_rotation,
 	}
 	
+	# Update our own simulation as fast as possible
+	simulation.accept_player_input(player_input)
+	
 	# Only send inputs to the server at the decided tick rate
+	if not multiplayer.is_server():
+		update_server_inputs(delta, player_input)
+
+func update_server_inputs(delta: float, player_input: Dictionary):
 	frame_time += (delta * 1000)
 	if frame_time > desired_frame_time:
 		
@@ -59,6 +64,7 @@ func _process(delta: float):
 		frame_count += 1
 		frame_time = frame_time - desired_frame_time
 	
+	# Reliable, one-off calls, like firing a gun 
 #	fired = false
 #	if Input.is_action_just_pressed("fire"):
 #		fired = true
