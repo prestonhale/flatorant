@@ -116,6 +116,12 @@ func receive_snapshot(snapshot: Dictionary):
 		# Set the player's position to render
 		player.position = player_data["position"]
 		player.rotation = player_data["rotation"]
+	
+	for tracer in snapshot["tracers"]:
+		_draw_shot_tracer(
+			tracer["start"],
+			tracer["end"]
+		)
 
 # Hook up the player to all the systems that track their actions
 func _track_new_player(player: Player):
@@ -187,8 +193,6 @@ func debug_print(a, b):
 	shot.add_point(b)
 	add_child(shot)
 
-
-@rpc("call_local", "reliable")
 func _draw_shot_tracer(player_pos: Vector2, shot_pos: Vector2):
 	var shot = shot_scn.instantiate()
 	shot.add_point(player_pos)

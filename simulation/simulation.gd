@@ -9,6 +9,8 @@ class_name Simulation
 # The server is perpetually BEHIND the client view by the length of the buffer.
 # This is to give players inputs time to reach the server and be processed.
 
+var tracer_scn = preload("res://simulation/simulated_tracer.tscn")
+
 # The current frame on the server
 var current_frame = 0
 
@@ -30,10 +32,12 @@ var desired_frame_time: float = 16.66 # 1000ms / 60 ticks
 # A reference to the main_level which is responsible to displaying the snapshot
 var main_level: MainLevel
 
+@export var player_speed = 200
+
+# THE SIMULATION
+
 # Simulated players; player_id -> player
 var simulated_players = {}
-
-@export var player_speed = 200
 
 func _ready():
 	frame_buffer.resize(20)
@@ -52,6 +56,8 @@ func _physics_process(delta: float):
 		update_client_snapshots(delta, snapshot)
 
 func update_client_snapshots(delta: float, snapshot: Dictionary):
+	# TODO: Filter how much of the sim state is sent to each client
+	# e.g. don't send the whole tracer if you can only see part of it
 	frame_time += (delta * 1000)
 	if frame_time > desired_frame_time:
 #		print("snap send")
@@ -88,6 +94,22 @@ func handle_rotation_input(input: Dictionary):
 	var player = simulated_players[input.player_id]
 	player.rotation = input.rotation
 
+func handle_fire_gun(input: Dictionary):
+	if input.fired:
+		var player: Player = simulated_players[input.player_id]
+		
+		# Get location bullet strikes
+		var ray = player.get_node("Gun").get_node("RayCast2D")
+		ray.enabled = true
+		ray.force_raycast_update()
+		var collision_point = ray.get_collision_point()
+		ray.enabled = false
+		
+		var tracer = tracer_scn.instantiate()
+		tracer.start = player.position
+		tracer.end = collision_point
+		$SimulatedTracers.add_child(tracer)
+
 func simulate(delta: float):
 	# Process all player inputs (updating the simulation as we go) in order received
 	var input_size = player_inputs.size()
@@ -117,9 +139,19 @@ func simulate(delta: float):
 			"rotation": player.rotation
 		}
 	
+	snapshot["tracers"] = []
+	for tracer in $SimulatedTracers.get_children():
+		# Simulated tracers is a already a dictionary so just add
+		snapshot["tracers"].append({
+			"start": tracer.start,
+			"end": tracer.end,
+	
+		})
+	
 	return snapshot
 	
 func apply_input_to_simulation(input: Dictionary, delta: float):
+	# Shots must happen before the player's move
+	handle_fire_gun(input)
 	handle_direction_input(input, delta)
 	handle_rotation_input(input)
-#	handle_fire_gun(input)

@@ -1,14 +1,19 @@
-[gd_scene load_steps=4 format=3 uid="uid://cje1uderq84cy"]
+[gd_scene load_steps=4 format=3 uid="uid://dgx0jiq5higf5"]
 
 [ext_resource type="Texture2D" uid="uid://ba6q8s83isana" path="res://art/crab.png" id="1_1kxj3"]
-[ext_resource type="Script" path="res://simulation/simulated_player.gd" id="1_8x4re"]
+
+[sub_resource type="GDScript" id="GDScript_j0tsu"]
+script/source = "extends CharacterBody2D
+
+var player_id: int
+"
 
 [sub_resource type="CapsuleShape2D" id="CapsuleShape2D_g7xl4"]
 radius = 7.0
 height = 37.0
 
 [node name="SimulatedPlayer" type="CharacterBody2D"]
-script = ExtResource("1_8x4re")
+script = SubResource("GDScript_j0tsu")
 
 [node name="PlayerSprite2D" type="Sprite2D" parent="."]
 modulate = Color(0.619608, 0, 0, 0.541176)

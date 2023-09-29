@@ -41,11 +41,16 @@ func _process(delta: float):
 	var new_to_rotation = atan2(mouse_position.y, mouse_position.x) + global_rotation
 	if new_to_rotation != to_rotation:
 		to_rotation = new_to_rotation
+		
+	fired = false
+	if Input.is_action_just_pressed("fire"):
+		fired = true
 	
 	var player_input = {
 		"player_id": get_parent().player,
 		"direction": direction,
 		"rotation": to_rotation,
+		"fired": fired
 	}
 	
 	# Update our own simulation as fast as possible
@@ -63,12 +68,4 @@ func update_server_inputs(delta: float, player_input: Dictionary):
 		
 		frame_count += 1
 		frame_time = frame_time - desired_frame_time
-	
-	# Reliable, one-off calls, like firing a gun 
-#	fired = false
-#	if Input.is_action_just_pressed("fire"):
-#		fired = true
-#		simulation.fire_gun.rpc(frame_count)
-
-	
 

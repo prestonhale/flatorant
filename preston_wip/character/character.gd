@@ -30,8 +30,6 @@ func _ready():
 	# Process this script after "PlayerInput"
 #	process_priority = 10
 	
-#	Input.mouse_mode = Input.MOUSE_MODE_CONFINED
-	
 	if is_current_player():
 		camera.make_current()
 	else:
