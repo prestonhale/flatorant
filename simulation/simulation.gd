@@ -23,8 +23,10 @@ var player_input_frame_offsets := {}
 # Player inputs to process
 # See "Minimizing Simulation Divergence" here
 # https://technology.riotgames.com/news/peeking-valorants-netcode
+# And this: https://www.gabrielgambetta.com/entity-interpolation.html
 var player_input_frame_map := {}
 var player_input_size = 20
+var reconcile_tail_size # Keep this many frames to reconcile against (~160ms)
 var player_inputs: Array[Dictionary] = []
 
 # A ring buffer that represents the server's history for "rewinding" to check 
@@ -61,8 +63,14 @@ func _physics_process(delta: float):
 
 	if delta * 1000 > desired_frame_time:
 		print("ERROR: Slow simulation frame took %dms" % (delta * 1000))
-
-	var snapshot = simulate(delta)
+	
+	# Get the inputs for the current frame
+	var player_input_head = current_frame % player_input_size
+	var inputs = player_inputs[player_input_head]
+	
+	# This is kind of neat if you think about it, the game only needs two things 
+	# fully simulate: the amount of time that's passed and the player inputs
+	var snapshot = simulate(inputs, delta)
 	
 #	print("INFO: Simulated frame %s (buffer idx %d)" % [current_frame, current_frame % player_input_size])
 
@@ -73,8 +81,8 @@ func _physics_process(delta: float):
 			var filtered_snapshot = filter_snapshot_for_client(player_id, snapshot)
 			reconcile.rpc_id(player_id, filtered_snapshot)
 	
-	# IMPORTANT: Clear player inputs from this frame in the ring buffer
-	player_inputs[current_frame % player_input_size] = {}
+	# IMPORTANT: Wipe out the player input that is now too old to matter > 166.667ms
+	player_inputs[(current_frame - 10) % player_input_size] = {}
 	
 	current_frame += 1
 
@@ -86,7 +94,12 @@ func _physics_process(delta: float):
 func filter_snapshot_for_client(player_id: int, snapshot: Dictionary) -> Dictionary:
 	var snapshot_copy = snapshot.duplicate(true)
 	# IMPORTANT: Use snapshot_copy from here out. It will be modified and modify "snapshot" would be BAD.
+	
+	# Set snapshot frames to the local frame number for each client (back out the offset)
+	snapshot_copy.frame = current_frame - player_input_frame_offsets[player_id]
+	
 	filter_snapshot_player_data(player_id, snapshot_copy["players"])
+	
 	return snapshot_copy
 	
 	
@@ -101,8 +114,18 @@ func filter_snapshot_player_data(player_id: int, player_snapshot_data: Dictionar
 # Update the state of the simulation to match a given snapshot
 @rpc("unreliable")
 func reconcile(snapshot: Dictionary):
+	# Put ourself in the state represented by this snapshot at its frame
 	reconcile_players(snapshot["players"])
 	reconcile_tracers(snapshot["tracers"])
+	
+	# Replay requested inputs on top of our state to catch back up to current frame
+	var frames_in_the_past = current_frame - snapshot.frame
+	if frames_in_the_past < 0:
+		print("ERROR: Got a reconcile for the future local frame: %d, reconcile frame %d." % [current_frame, snapshot.frame])
+		return
+	for frame_in_the_past in range(frames_in_the_past, 0):
+		var past_input = player_inputs[(current_frame - frames_in_the_past) % player_input_size]
+		simulate(past_input, 16.666667) # TODO: Do we even need delta?
 
 
 # ========== Tracer ==========
@@ -179,12 +202,14 @@ func accept_player_input(player_input: Dictionary):
 	# If this input for the frame we are just about to simulate, this is 0
 	# Large numbers here mean the server is running slowly or something is wrong client-side
 	var frames_into_future = player_frame_in_server_time - current_frame 
-	if frames_into_future >= 2 + delay_processing_by:
-		print("WARN: Received an input frame in the distant future (%d frames) from %d local frame %d server frame %d" % [frames_into_future, player_input.player_id, player_input.current_frame + offset, current_frame])
+	if frames_into_future >= 8 + delay_processing_by:
+		print("WARN: Received an input frame in the distant future (%d frames) from %d local frame %d server frame %d; discarding" % [frames_into_future, player_input.player_id, player_input.current_frame + offset, current_frame])
+		return
 	
 	# This input arrived too late, the server has moved on :(
-	# Should only happen when the player has significant lag
-	if frames_into_future < 0:
+	# Should only happen when the player has -significant- lag
+	# This allows for (~10 frames * 16.6667ms per frame) = 166.667ms of lag
+	if frames_into_future < -10:
 		print("WARN: Received input from player %s behind the server, discarding" % player_input.player_id)
 		return
 	
@@ -195,8 +220,8 @@ func accept_player_input(player_input: Dictionary):
 		print("WARN: Already have input for player %s at server frame %s (local frame %d, offset %d, buffer_idx %s)" % [player_input.player_id, player_frame_in_server_time, player_input.current_frame, offset, input_idx])
 		return
 	
-#	player_inputs.append(player_input)
 #	print("INFO: Assigning player input to buffer index %d" % input_idx)
+
 	player_inputs[input_idx][player_input.player_id] = player_input
 
 func handle_direction_input(input: Dictionary):
@@ -231,20 +256,18 @@ func handle_fire_gun(input: Dictionary):
 		
 		add_simulated_tracer("", player.global_position, collision_point)
 
-func simulate(delta: float):
-	# Process all player inputs (updating the simulation as we go) in order received
-	
-	var player_input_head = current_frame % player_input_size
+func simulate(inputs: Dictionary, delta: float):
 #	print("INFO: Simulating server frame: %d (input buffer idx: %d)" % [current_frame, player_input_head])
 	
-	var inputs = player_inputs[player_input_head]
-	
+	# Process all player inputs (updating the simulation as we go)
 	for player_id in inputs:
 		var input = inputs[player_id]
 		apply_input_to_simulation(input)
 	
 	# The current, full, state of the server simulation
 	var snapshot = {}
+	
+	snapshot["frame"] = current_frame # The frame this snapshot represents
 	
 	snapshot["players"] = {}
 	for player_id in simulated_players:
