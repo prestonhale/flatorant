@@ -2,7 +2,9 @@
 
 [ext_resource type="Script" path="res://simulation/simulated_tracer/simulated_tracer.gd" id="1_tsivg"]
 
-[node name="SimulatedTracer" type="Node2D"]
+[node name="SimulatedTracer" type="Line2D"]
+width = 2.0
+default_color = Color(0, 0.45098, 0.886275, 1)
 script = ExtResource("1_tsivg")
 
 [node name="Timer" type="Timer" parent="."]

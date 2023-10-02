@@ -71,4 +71,4 @@ exit={
 
 [physics]
 
-common/physics_ticks_per_second=128
+common/physics_ticks_per_second=64

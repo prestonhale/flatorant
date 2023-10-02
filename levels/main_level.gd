@@ -97,12 +97,12 @@ func _process(delta: float):
 	var player_ids = []
 	for player in players.get_children():
 		player_ids.append(int(str(player.name)))
-	
-	for tracer in simulation.simulated_tracers.get_children():
-		_draw_shot_tracer(
-			tracer["start"],
-			tracer["end"]
-		)
+#
+#	for tracer in simulation.simulated_tracers.get_children():
+#		_draw_shot_tracer(
+#			tracer["start"],
+#			tracer["end"]
+#		)
 
 # Hook up the player to all the systems that track their actions
 func _track_new_player(player: Player):
@@ -174,12 +174,12 @@ func debug_print(a, b):
 	shot.add_point(b)
 	add_child(shot)
 
-func _draw_shot_tracer(player_pos: Vector2, shot_pos: Vector2):
+func _draw_shot_tracer(point1: Vector2, point2: Vector2):
 	var shot = shot_scn.instantiate()
-	shot.add_point(player_pos)
-	shot.add_point(shot_pos)
+	shot.add_point(to_local(point1))
+	shot.add_point(to_local(point2))
 	add_child(shot)
-
+	
 func _get_start_pos() -> Node2D:
 	return start_positions.get_child(randi_range(0, (start_positions.get_child_count()-1)))
 
