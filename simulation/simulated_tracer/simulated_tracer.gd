@@ -7,6 +7,11 @@ var end: Vector2
 
 # Called when the node enters the scene tree for the first time.
 func _ready():
-	add_point(to_local(start))
-	add_point(to_local(end))
+	# Placing this at 0,0 means that local and global position are the same for it
+	global_position = Vector2.ZERO 
+#	print("===")
+#	print(start)
+#	print(end)
+	add_point(start)
+	add_point(end)
 	$Timer.timeout.connect(queue_free)

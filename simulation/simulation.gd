@@ -11,6 +11,7 @@ class_name Simulation
 
 var tracer_scn = preload("res://simulation/simulated_tracer/simulated_tracer.tscn")
 var player_scn = preload("res://player/player.tscn")
+var hit_scn = preload("res://simulation/simulated_hit/simulated_hit.tscn")
 
 # The current frame on the server
 var current_frame = 0
@@ -29,6 +30,9 @@ var player_input_size = 20
 var reconcile_tail_size # Keep this many frames to reconcile against (~160ms)
 var player_inputs: Array[Dictionary] = []
 
+# The most recent server frame to reconcile agains
+var reconcile_frame: Dictionary = {}
+
 # A ring buffer that represents the server's history for "rewinding" to check 
 # whether shots fired in the past hit.
 # Contains 20 frames. At 128 frames/ticks per second this is 156 ms
@@ -40,15 +44,16 @@ var desired_frame_time: float = 16.67 # Slow server for testing
 # A reference to the main_level which is responsible to displaying the snapshot
 var main_level: MainLevel
 
-var delay_processing_by = 1 # Number of frames to buffer
+var delay_processing_by = 3 # Number of frames to buffer
 
-@export var player_speed = 2
+@export var player_speed = 4
 
 # THE SIMULATION
 
 # Simulated players; player_id -> player
 var simulated_players = {}
 @onready var simulated_tracers = $SimulatedTracers
+@onready var simulated_hits = $SimulatedHit
 
 func _ready():
 	frame_buffer.resize(20)
@@ -60,6 +65,10 @@ func _ready():
 func _physics_process(delta: float):
 	process_priority = 1 # Always run the simulation after input
 	
+	# The simulation doesn't start until the player input begins
+	# This ensures that "current_frame" here and in player_input.gd are the same
+	if multiplayer.get_unique_id() not in player_input_frame_offsets:
+		return 
 
 	if delta * 1000 > desired_frame_time:
 		print("ERROR: Slow simulation frame took %dms" % (delta * 1000))
@@ -67,19 +76,26 @@ func _physics_process(delta: float):
 	# Get the inputs for the current frame
 	var player_input_head = current_frame % player_input_size
 	var inputs = player_inputs[player_input_head]
-	
+
+	if not multiplayer.is_server() and reconcile_frame:
+		reconcile()
+#
 	# This is kind of neat if you think about it, the game only needs two things 
 	# fully simulate: the amount of time that's passed and the player inputs
+#	print("DEBUG: Initial simulate of frame: %d" % current_frame)
 	var snapshot = simulate(inputs, delta)
+	
+#	print("INFO: At frame %d, player was located at %s" % [current_frame, simulated_players[multiplayer.get_unique_id()].position])
 	
 #	print("INFO: Simulated frame %s (buffer idx %d)" % [current_frame, current_frame % player_input_size])
 
-	# Send snapshots to clients for them to reconcile against
+	# Server: Send snapshots to clients for them to reconcile against
 	if multiplayer.is_server():
 		for player_id in simulated_players:
 			if player_id == 1: continue # Skip the server
 			var filtered_snapshot = filter_snapshot_for_client(player_id, snapshot)
-			reconcile.rpc_id(player_id, filtered_snapshot)
+			set_reconcile.rpc_id(player_id, filtered_snapshot)
+	# Clients: Reconcile against the most recent snapshot you were sent
 	
 	# IMPORTANT: Wipe out the player input that is now too old to matter > 166.667ms
 	player_inputs[(current_frame - 10) % player_input_size] = {}
@@ -95,7 +111,7 @@ func filter_snapshot_for_client(player_id: int, snapshot: Dictionary) -> Diction
 	var snapshot_copy = snapshot.duplicate(true)
 	# IMPORTANT: Use snapshot_copy from here out. It will be modified and modify "snapshot" would be BAD.
 	
-	# Set snapshot frames to the local frame number for each client (back out the offset)
+	# Set sanapshot frames to the local frame number for each client (back out the offset)
 	snapshot_copy.frame = current_frame - player_input_frame_offsets[player_id]
 	
 	filter_snapshot_player_data(player_id, snapshot_copy["players"])
@@ -104,29 +120,65 @@ func filter_snapshot_for_client(player_id: int, snapshot: Dictionary) -> Diction
 	
 	
 func filter_snapshot_player_data(player_id: int, player_snapshot_data: Dictionary):
-	# TEMPORARY: Players do not reconcile against their own data
-	for player_id_in_snapshot in player_snapshot_data:
-		if player_id == player_id_in_snapshot:
-			player_snapshot_data.erase(player_id)
-			return
+	pass
+	# TODO: Exclude players you can't see
+
+@rpc("unreliable")
+func set_reconcile(snapshot: Dictionary):
+	# Update frame to reconcile to if newer
+	if snapshot["frame"] > reconcile_frame.get("frame", 0):
+		reconcile_frame = snapshot
 	
 
 # Update the state of the simulation to match a given snapshot
-@rpc("unreliable")
-func reconcile(snapshot: Dictionary):
+func reconcile():
+	var snapshot := reconcile_frame
+	if not snapshot:
+		return
+	
+	var player_pos = snapshot.players[multiplayer.get_unique_id()].position
+#	print("Reconcile for frame %d has player at %s" % [snapshot.frame, player_pos])
+	
+	var frames_in_the_past = current_frame - snapshot["frame"]
+#	print("INFO: Player %d Received %d FRAME reconcile from server frame %d local frame %d" % [multiplayer.get_unique_id(), frames_in_the_past, snapshot.frame, current_frame])
 	# Put ourself in the state represented by this snapshot at its frame
 	reconcile_players(snapshot["players"])
 	reconcile_tracers(snapshot["tracers"])
-	
-	# Replay requested inputs on top of our state to catch back up to current frame
-	var frames_in_the_past = current_frame - snapshot.frame
-	if frames_in_the_past < 0:
-		print("ERROR: Got a reconcile for the future local frame: %d, reconcile frame %d." % [current_frame, snapshot.frame])
-		return
-	for frame_in_the_past in range(frames_in_the_past, 0):
-		var past_input = player_inputs[(current_frame - frames_in_the_past) % player_input_size]
-		simulate(past_input, 16.666667) # TODO: Do we even need delta?
+	reconcile_hits(snapshot["hits"])
 
+#	print("Before reconcile %s" % simulated_players[multiplayer.get_unique_id()].position)
+	# Replay requested inputs on top of our state to catch back up to current frame
+	if frames_in_the_past < 0:
+#		print("ERROR: Player %d got a reconcile from the future (local frame: %d, reconcile frame %d)" % [snapshot.player_id, current_frame, snapshot.frame])
+		return
+	for frame_in_the_past in range(frames_in_the_past, 0, -1):
+		var player_input_head = current_frame % player_input_size
+		var past_input = player_inputs[(current_frame - frame_in_the_past) % player_input_size]
+#		print(past_input)
+
+		# Resimulate previous frames
+#		print("INFO: Reconcile simulate of frame: %d" % (current_frame - frame_in_the_past))
+		simulate(past_input, 16.666667) # TODO: Do we even need delta?
+	
+#	print("After reconcile %s" % simulated_players[multiplayer.get_unique_id()].position)
+	
+	reconcile_frame = {}
+
+# =========== Hit ==========
+func add_simulated_hit(hit_id: String, position: Vector2):
+	var hit = hit_scn.instantiate()
+	hit.name = hit_id
+	if hit_id == "":
+		hit.name = str(hit.get_instance_id())
+	hit.position = position
+	simulated_hits.add_child(hit)
+	hit.emitting = true
+
+func reconcile_hits(hit_snapshot_data: Dictionary):
+	for hit_id in hit_snapshot_data.keys():
+		if not simulated_hits.get_node(hit_id):
+			var hit_data = hit_snapshot_data[hit_id]
+			add_simulated_hit(hit_data["id"], hit_data["position"])
 
 # ========== Tracer ==========
 func reconcile_tracers(tracer_snapshot_data: Dictionary):
@@ -165,6 +217,7 @@ func reconcile_players(player_snapshot_data: Dictionary):
 func reconcile_player(player: Player, player_data: Dictionary):
 	player.position = player_data.position
 	player.rotation = player_data.rotation
+	player.frames_since_last_shot = player_data.frames_since_last_shot
 
 func add_simulated_player(player_id: int, position: Vector2, rotation: float) -> Player:
 	print("Adding player to simulation %d" % player_id)
@@ -194,7 +247,7 @@ func accept_player_input(player_input: Dictionary):
 	
 	# This is the first input we've received for this player, add to offset map
 	if offset == null:
-		offset = 2 + (current_frame - player_input.current_frame)
+		offset = (current_frame - player_input.current_frame)
 		player_input_frame_offsets[player_input.player_id] = offset
 		print("INFO: Got first input for player %s: offset frames %d" % [player_input.player_id, offset])
 	
@@ -202,7 +255,7 @@ func accept_player_input(player_input: Dictionary):
 	# If this input for the frame we are just about to simulate, this is 0
 	# Large numbers here mean the server is running slowly or something is wrong client-side
 	var frames_into_future = player_frame_in_server_time - current_frame 
-	if frames_into_future >= 8 + delay_processing_by:
+	if frames_into_future >= 8:
 		print("WARN: Received an input frame in the distant future (%d frames) from %d local frame %d server frame %d; discarding" % [frames_into_future, player_input.player_id, player_input.current_frame + offset, current_frame])
 		return
 	
@@ -211,9 +264,11 @@ func accept_player_input(player_input: Dictionary):
 	# This allows for (~10 frames * 16.6667ms per frame) = 166.667ms of lag
 	if frames_into_future < -10:
 		print("WARN: Received input from player %s behind the server, discarding" % player_input.player_id)
+		# Reset their offset so once they send packets again it can catch up
+		player_input_frame_offsets.erase(player_input.player_id)
 		return
 	
-	var input_idx = player_frame_in_server_time  % player_input_size
+	var input_idx = (player_frame_in_server_time + delay_processing_by)  % player_input_size
 	# Sanity check do we already have input for this frame, should be impossible
 	if player_inputs[input_idx].get(player_input.player_id, null) != null:
 		print(player_inputs[input_idx])
@@ -228,11 +283,11 @@ func handle_direction_input(input: Dictionary):
 	var direction = Vector2(
 		input.direction.x,
 		input.direction.y
-	).normalized() * player_speed
+	).normalized()
 	var player = simulated_players[input.player_id]
-	player.velocity.x = direction.x * 400
-	player.velocity.y = direction.y * 400
-	player.move_and_slide()
+	player.velocity.x = direction.x * player_speed
+	player.velocity.y = direction.y * player_speed
+	player.move_and_collide(Vector2(player.velocity.x, player.velocity.y))
 
 func handle_rotation_input(input: Dictionary):
 	var player = simulated_players[input.player_id]
@@ -242,27 +297,47 @@ func handle_fire_gun(input: Dictionary):
 	if input.fired:
 		var player: Player = simulated_players[input.player_id]
 		
+		if player.frames_since_last_shot < 25:
+			return
+		
+		player.frames_since_last_shot = 0
+		
 		# Raycast from player to collision
 		var start_of_ray = player.global_position
 		# Line extending in direction player is facing
 		var end_of_ray = player.global_position + (Vector2.from_angle(player.rotation) * 5000)
 		var space_state = get_world_2d().direct_space_state
-		var query = PhysicsRayQueryParameters2D.create(start_of_ray, end_of_ray)
+		var query = PhysicsRayQueryParameters2D.create(start_of_ray, end_of_ray, 2)
 		var result = space_state.intersect_ray(query)
 		
-		var collision_point = end_of_ray # If the shot hits nothing show it ending off-screen
 		if result: # But if it hits something, use that
-			collision_point = result.position
+			end_of_ray = result.position
+			var hit = result.collider
+			if hit.is_in_group("player"):
+				add_simulated_hit("", result.position)
 		
-		add_simulated_tracer("", player.global_position, collision_point)
+		add_simulated_tracer("", start_of_ray, end_of_ray)
 
 func simulate(inputs: Dictionary, delta: float):
 #	print("INFO: Simulating server frame: %d (input buffer idx: %d)" % [current_frame, player_input_head])
 	
-	# Process all player inputs (updating the simulation as we go)
+	# Hits are only sent in a single frame
+	
+	
+	# Check if we have everyone's input when processing server
+	if multiplayer.is_server():
+		for player_id in simulated_players:
+			if player_id not in inputs:
+				print("WARN: Frame %d don't have input for %s" % [current_frame, player_id])
+		
 	for player_id in inputs:
 		var input = inputs[player_id]
 		apply_input_to_simulation(input)
+	
+	# Time-based simulation advancement
+	# Tick up "time since last shot"
+	for player in simulated_players.values():
+		player.frames_since_last_shot += 1
 	
 	# The current, full, state of the server simulation
 	var snapshot = {}
@@ -274,9 +349,12 @@ func simulate(inputs: Dictionary, delta: float):
 		var player = simulated_players[player_id]
 		snapshot["players"][player_id] = {
 			"position": player.position,
-			"rotation": player.rotation
+			"rotation": player.rotation,
+			# TODO: Filter so its only sent to the player who shot
+			"frames_since_last_shot": player.frames_since_last_shot,
 		}
 	
+	# TODO: Don't display your own tracers
 	snapshot["tracers"] = {}
 	for tracer in $SimulatedTracers.get_children():
 		# Simulated tracers is a already a dictionary so just add
@@ -284,6 +362,13 @@ func simulate(inputs: Dictionary, delta: float):
 			# Global positions
 			"start": tracer.start,
 			"end": tracer.end,
+		}
+	
+	snapshot["hits"] = {}
+	for hit in simulated_hits.get_children():
+		snapshot["hits"][hit.name] = {
+			"position": hit.position,
+			"id": hit.name
 		}
 	
 	return snapshot

@@ -14,6 +14,7 @@ signal fired_shot
 @onready var sprite = $PlayerSprite2D
 @onready var camera = $Camera2D
 
+var frames_since_last_shot: int
 
 var rrotation: float
 

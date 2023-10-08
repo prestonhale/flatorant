@@ -31,6 +31,8 @@ func _ready():
 	
 
 func _physics_process(delta: float):
+	if delta > 16.7:
+		print("WARN: Slow input frame")
 #	print("INFO: Player %s sending input for frame %d" % [get_parent().player, current_frame])
 	send_player_input(delta)
 	current_frame += 1

@@ -55,7 +55,7 @@ func _on_player_connected(new_player_id: int, new_player_info: Dictionary):
 @rpc("reliable", "call_local")
 func add_player(id: int):
 	print("add_player: %d" % id)
-	position = _get_start_pos().position
+	var position = _get_start_pos().position
 	
 	var player = simulation.add_simulated_player(id, position, 0)
 
@@ -97,12 +97,7 @@ func _process(delta: float):
 	var player_ids = []
 	for player in players.get_children():
 		player_ids.append(int(str(player.name)))
-#
-#	for tracer in simulation.simulated_tracers.get_children():
-#		_draw_shot_tracer(
-#			tracer["start"],
-#			tracer["end"]
-#		)
+	
 
 # Hook up the player to all the systems that track their actions
 func _track_new_player(player: Player):

@@ -1,10 +1,9 @@
-[gd_scene load_steps=9 format=3 uid="uid://b001tvur7jlkr"]
+[gd_scene load_steps=8 format=3 uid="uid://b001tvur7jlkr"]
 
 [ext_resource type="Script" path="res://preston_wip/character/character.gd" id="1_vid82"]
 [ext_resource type="Texture2D" uid="uid://ba6q8s83isana" path="res://art/crab.png" id="2_f4qvb"]
 [ext_resource type="PackedScene" uid="uid://kf8tqdlm8c5t" path="res://addons/vision_cone_2d/vision_cone_2d_template.tscn" id="3_lt0ua"]
-[ext_resource type="Script" path="res://player/health.gd" id="3_s6xvg"]
-[ext_resource type="Script" path="res://player/player_input.gd" id="4_3clxj"]
+[ext_resource type="Script" path="res://player/player_input.gd" id="4_4arae"]
 
 [sub_resource type="CapsuleShape2D" id="CapsuleShape2D_vsdfj"]
 radius = 7.0
@@ -16,7 +15,7 @@ size = Vector2(13, 37.9975)
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_8jrak"]
 size = Vector2(8.99946, 16)
 
-[node name="Player" type="CharacterBody2D"]
+[node name="Player" type="CharacterBody2D" groups=["player"]]
 scale = Vector2(2, 2)
 collision_mask = 9
 script = ExtResource("1_vid82")
@@ -28,7 +27,6 @@ rotation = -1.5708
 texture = ExtResource("2_f4qvb")
 
 [node name="Health" type="Node2D" parent="."]
-script = ExtResource("3_s6xvg")
 
 [node name="SmallHitParticles" type="CPUParticles2D" parent="Health"]
 emitting = false
@@ -82,10 +80,6 @@ scale_amount_min = 4.0
 scale_amount_max = 4.0
 color = Color(0.968627, 0, 0.215686, 1)
 
-[node name="Timer" type="Timer" parent="Health"]
-wait_time = 2.0
-one_shot = true
-
 [node name="VisionCone2D" parent="." instance=ExtResource("3_lt0ua")]
 rotation = -1.5708
 angle_deg = 60
@@ -104,18 +98,9 @@ collision_layer = 4
 position = Vector2(-1, -1)
 shape = SubResource("CapsuleShape2D_vsdfj")
 
-[node name="Gun" type="Node2D" parent="."]
-
-[node name="RayCast2D" type="RayCast2D" parent="Gun"]
-rotation = -1.5708
-enabled = false
-target_position = Vector2(0, 2000)
-collision_mask = 10
-collide_with_areas = true
-
 [node name="Collision" type="Node2D" parent="."]
 
-[node name="Torso" type="StaticBody2D" parent="."]
+[node name="Torso" type="StaticBody2D" parent="." groups=["player"]]
 collision_layer = 2
 collision_mask = 0
 
@@ -125,7 +110,7 @@ rotation = 0.00241721
 shape = SubResource("RectangleShape2D_7jikk")
 debug_color = Color(0.631373, 0.027451, 0.372549, 0.419608)
 
-[node name="Head" type="StaticBody2D" parent="."]
+[node name="Head" type="StaticBody2D" parent="." groups=["player"]]
 collision_layer = 2
 collision_mask = 0
 
@@ -138,6 +123,6 @@ shape = SubResource("RectangleShape2D_8jrak")
 
 [node name="PlayerInput" type="Node2D" parent="."]
 position = Vector2(0.5, 0)
-script = ExtResource("4_3clxj")
+script = ExtResource("4_4arae")
 
 [editable path="VisionCone2D"]
