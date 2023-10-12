@@ -10,7 +10,6 @@ signal fired_shot
 @onready var vision_cone = $VisionCone2D
 @onready var vision_cone_area = $VisionCone2D/VisionConeArea
 @onready var health = $Health
-@onready var gun = $Gun
 @onready var sprite = $PlayerSprite2D
 @onready var camera = $Camera2D
 

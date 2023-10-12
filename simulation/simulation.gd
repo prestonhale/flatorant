@@ -60,7 +60,7 @@ func _ready():
 	frame_buffer.fill([])
 	
 	player_inputs.resize(player_input_size)
-	player_inputs.fill([])
+	player_inputs.fill({})
 	
 func _physics_process(delta: float):
 	process_priority = 1 # Always run the simulation after input
@@ -152,8 +152,8 @@ func reconcile():
 #		print("ERROR: Player %d got a reconcile from the future (local frame: %d, reconcile frame %d)" % [snapshot.player_id, current_frame, snapshot.frame])
 		return
 	for frame_in_the_past in range(frames_in_the_past, 0, -1):
-		var player_input_head = current_frame % player_input_size
-		var past_input = player_inputs[(current_frame - frame_in_the_past) % player_input_size]
+		var player_input_head = (current_frame - frame_in_the_past) % player_input_size
+		var past_input = player_inputs[player_input_head]
 #		print(past_input)
 
 		# Resimulate previous frames
@@ -167,16 +167,17 @@ func reconcile():
 # =========== Hit ==========
 func add_simulated_hit(hit_id: String, position: Vector2):
 	var hit = hit_scn.instantiate()
-	hit.name = hit_id
 	if hit_id == "":
 		hit.name = str(hit.get_instance_id())
+	else:
+		hit.name = hit_id
 	hit.position = position
 	simulated_hits.add_child(hit)
 	hit.emitting = true
 
 func reconcile_hits(hit_snapshot_data: Dictionary):
 	for hit_id in hit_snapshot_data.keys():
-		if not simulated_hits.get_node(hit_id):
+		if not simulated_hits.get_node_or_null(hit_id):
 			var hit_data = hit_snapshot_data[hit_id]
 			add_simulated_hit(hit_data["id"], hit_data["position"])
 
@@ -184,7 +185,7 @@ func reconcile_hits(hit_snapshot_data: Dictionary):
 func reconcile_tracers(tracer_snapshot_data: Dictionary):
 	for tracer_id in tracer_snapshot_data.keys():
 	# Add
-		if not simulated_tracers.get_node(tracer_id):
+		if not simulated_tracers.get_node_or_null(tracer_id):
 			var tracer_data = tracer_snapshot_data[tracer_id]
 			add_simulated_tracer(tracer_id, tracer_data["start"], tracer_data["end"])
 	# Reconcile: We don't reconcile existing tracers, they're very ephemeral
@@ -318,7 +319,7 @@ func handle_fire_gun(input: Dictionary):
 		
 		add_simulated_tracer("", start_of_ray, end_of_ray)
 
-func simulate(inputs: Dictionary, delta: float):
+func simulate(inputs: Dictionary, _delta: float):
 #	print("INFO: Simulating server frame: %d (input buffer idx: %d)" % [current_frame, player_input_head])
 	
 	# Hits are only sent in a single frame
