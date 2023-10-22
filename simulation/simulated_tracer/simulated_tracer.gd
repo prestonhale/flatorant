@@ -2,6 +2,8 @@ extends Line2D
 
 class_name SimulatedTracer
 
+var player_id: String # Player who created this tracer
+var id: String
 var start: Vector2
 var end: Vector2
 

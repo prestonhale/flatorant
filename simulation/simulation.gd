@@ -184,17 +184,20 @@ func reconcile_hits(hit_snapshot_data: Dictionary):
 func reconcile_tracers(tracer_snapshot_data: Dictionary):
 	for tracer_id in tracer_snapshot_data.keys():
 	# Add
-		if not simulated_tracers.get_node(tracer_id):
-			var tracer_data = tracer_snapshot_data[tracer_id]
-			add_simulated_tracer(tracer_id, tracer_data["start"], tracer_data["end"])
+		var tracer_data = tracer_snapshot_data[tracer_id]
+		if not simulated_tracers.get_node(tracer_id) \
+		and tracer_data["player_id"] != str(multiplayer.get_unique_id()): # Don't reconcile our personal tracers
+			add_simulated_tracer(tracer_id, tracer_data["player_id"], tracer_data["start"], tracer_data["end"])
 	# Reconcile: We don't reconcile existing tracers, they're very ephemeral
 	# Remove: See above
 			
-func add_simulated_tracer(tracer_id: String, start: Vector2, end: Vector2):
+func add_simulated_tracer(tracer_id: String, player_id: String, start: Vector2, end: Vector2):
 	var tracer = tracer_scn.instantiate()
 	if tracer_id == "":
 		tracer_id = str(tracer.get_instance_id())
 	tracer.name = tracer_id
+	tracer.id = tracer_id
+	tracer.player_id = player_id
 	tracer.start = start
 	tracer.end = end
 	simulated_tracers.add_child(tracer)
@@ -313,16 +316,18 @@ func handle_fire_gun(input: Dictionary):
 		if result: # But if it hits something, use that
 			end_of_ray = result.position
 			var hit = result.collider
-			if hit.is_in_group("player"):
-				add_simulated_hit("", result.position)
+			
+			# Only servers can validate hits
+			if multiplayer.is_server():
+				if hit.is_in_group("player"):
+					add_simulated_hit("", result.position)
 		
-		add_simulated_tracer("", start_of_ray, end_of_ray)
+		add_simulated_tracer("", str(player.player), start_of_ray, end_of_ray)
 
 func simulate(inputs: Dictionary, delta: float):
 #	print("INFO: Simulating server frame: %d (input buffer idx: %d)" % [current_frame, player_input_head])
 	
 	# Hits are only sent in a single frame
-	
 	
 	# Check if we have everyone's input when processing server
 	if multiplayer.is_server():
@@ -357,8 +362,8 @@ func simulate(inputs: Dictionary, delta: float):
 	# TODO: Don't display your own tracers
 	snapshot["tracers"] = {}
 	for tracer in $SimulatedTracers.get_children():
-		# Simulated tracers is a already a dictionary so just add
 		snapshot["tracers"][tracer.name] = {
+			"player_id": tracer.player_id,
 			# Global positions
 			"start": tracer.start,
 			"end": tracer.end,
