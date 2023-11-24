@@ -43,6 +43,7 @@ func _ready():
 		add_player(player["id"])
 	
 	MultiplayerLobby.player_connected.connect(_on_player_connected)
+	MultiplayerLobby.player_disconnected.connect(_on_player_disconnected)
 	
 	random_level()
 #
@@ -52,6 +53,10 @@ func _on_player_connected(new_player_id: int, new_player_info: Dictionary):
 	print("Added peer: %d" % new_player_id)
 	add_player(new_player_id)
 
+func _on_player_disconnected(player_id: int):
+	print("Removed peer: %d" % player_id)
+	del_player(player_id)
+
 @rpc("reliable", "call_local")
 func add_player(id: int):
 	print("add_player: %d" % id)
@@ -59,21 +64,6 @@ func add_player(id: int):
 	
 	var player = simulation.add_simulated_player(id, position, 0)
 
-#	var player_count = $Players.get_child_count() - 1
-#	character.change_color(PLAYER_COLORS[player_count])
-
-	# Capture important signals from this player
-#	character.vision_cone_area.body_entered.connect(
-#		func(other_player: Node2D): _on_vision_cone_body_entered(character, other_player)
-#	)
-
-#	character.vision_cone_area.body_exited.connect(
-#		func(other_player: Node2D): _on_vision_cone_body_exited(character, other_player)
-#	)
-
-#	character.health.died.connect(
-#		func(): _on_player_died(character))
-#
 	# Fog of war follows only our character
 	if id == multiplayer.get_unique_id():
 		current_character = player as Player
@@ -81,13 +71,13 @@ func add_player(id: int):
 
 @rpc("reliable", "call_local")
 func del_player(id: int):
-	if simulation:
-		simulation.del_player(id)
-		
 	if not $Players.has_node(str(id)):
 		return
-		
-	$Players.get_node(str(id)).queue_free()
+	
+	var player = $Players.get_node(str(id))
+	
+	if simulation:
+		simulation.remove_simulated_player(player)
 
 # State should not change here, this function is about DISPLAYING the state
 func _process(delta: float):
@@ -98,25 +88,11 @@ func _process(delta: float):
 	for player in players.get_children():
 		player_ids.append(int(str(player.name)))
 	
-
 # Hook up the player to all the systems that track their actions
 func _track_new_player(player: Player):
 	if player.player == multiplayer.get_unique_id():
 		current_character = player
 		fog_of_war.tracked_player = current_character
-	shots_manager.track_player(player)
-	
-# Make the entering player visible to this player
-func _on_vision_cone_body_entered(player: Player, other_player: Node2D):
-	other_player = other_player as Player
-#	print("Enter %s" % other_player.player)
-	other_player.set_visible_to(player.player)
-
-# Make the exiting player invisible to this player
-func _on_vision_cone_body_exited(player: Player, other_player: Node2D):
-	other_player = other_player as Player
-#	print("Exit %s" % other_player.player)
-	other_player.set_invisible_to(player.player)
 
 func _on_character_fired_shot(player_pos: Vector2, shot_pos: Vector2):
 	# Cast rays to get entry aand exit points of all view cones it passes through

@@ -6,6 +6,7 @@
 script/source = "extends CharacterBody2D
 
 var player_id: int
+var health: int = 100
 "
 
 [sub_resource type="CapsuleShape2D" id="CapsuleShape2D_g7xl4"]

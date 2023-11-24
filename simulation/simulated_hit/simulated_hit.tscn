@@ -1,4 +1,6 @@
-[gd_scene format=3 uid="uid://der15txt0c2n4"]
+[gd_scene load_steps=2 format=3 uid="uid://der15txt0c2n4"]
+
+[ext_resource type="Script" path="res://simulation/simulated_hit/simulated_hit.gd" id="1_tg1ya"]
 
 [node name="SmallHitParticles" type="CPUParticles2D"]
 emitting = false
@@ -16,3 +18,4 @@ initial_velocity_max = 100.0
 scale_amount_min = 4.0
 scale_amount_max = 4.0
 color = Color(0.968627, 0, 0.215686, 1)
+script = ExtResource("1_tg1ya")

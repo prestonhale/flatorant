@@ -31,8 +31,6 @@ func _ready():
 	
 
 func _physics_process(delta: float):
-	if delta > 16.7:
-		print("WARN: Slow input frame")
 #	print("INFO: Player %s sending input for frame %d" % [get_parent().player, current_frame])
 	send_player_input(delta)
 	current_frame += 1
@@ -65,7 +63,7 @@ func send_player_input(delta: float):
 		
 	# Update our local simulation
 #	print("INFO: Sending input for player %s at local frame %s" % [get_parent().player, current_frame])
-	simulation.accept_player_input(player_input)
+	simulation.local_player_input(player_input)
 
 	# Tell the server about our inputs
 	if not multiplayer.is_server():

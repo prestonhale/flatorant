@@ -11,7 +11,11 @@ class_name Simulation
 
 var tracer_scn = preload("res://simulation/simulated_tracer/simulated_tracer.tscn")
 var player_scn = preload("res://player/player.tscn")
+var debug_player_scn = preload("res://player/debug_player.tscn")
 var hit_scn = preload("res://simulation/simulated_hit/simulated_hit.tscn")
+
+# Debug options
+var show_debug_visualization = true
 
 # The current frame on the server
 var current_frame = 0
@@ -20,6 +24,10 @@ var current_frame = 0
 # If the client sends "current_frame = 0" when the server is on frame 230 the
 # offset if 230
 var player_input_frame_offsets := {}
+
+# Every X frames we reconcile the players position with the server
+# Can result in rubberbanding if the server and player disagree on position
+var frames_between_self_reconcile = 10
 
 # Player inputs to process
 # See "Minimizing Simulation Divergence" here
@@ -44,14 +52,15 @@ var desired_frame_time: float = 16.67 # Slow server for testing
 # A reference to the main_level which is responsible to displaying the snapshot
 var main_level: MainLevel
 
-var delay_processing_by = 3 # Number of frames to buffer
+var delay_processing_by = 1 # Number of frames to buffer
 
-@export var player_speed = 4
+@export var player_speed = 5
 
 # THE SIMULATION
 
 # Simulated players; player_id -> player
 var simulated_players = {}
+@onready var debug_players = $DebugPlayers
 @onready var simulated_tracers = $SimulatedTracers
 @onready var simulated_hits = $SimulatedHit
 
@@ -78,12 +87,15 @@ func _physics_process(delta: float):
 	var inputs = player_inputs[player_input_head]
 
 	if not multiplayer.is_server() and reconcile_frame:
+#		print("DEBUG: Reconciling to frame " + str(reconcile_frame["frame"]))
 		reconcile()
 #
 	# This is kind of neat if you think about it, the game only needs two things 
 	# fully simulate: the amount of time that's passed and the player inputs
 #	print("DEBUG: Initial simulate of frame: %d" % current_frame)
-	var snapshot = simulate(inputs, delta)
+#	print("DEBUG: Input %s" % inputs)
+	var snapshot = simulate(inputs)
+
 	
 #	print("INFO: At frame %d, player was located at %s" % [current_frame, simulated_players[multiplayer.get_unique_id()].position])
 	
@@ -93,6 +105,7 @@ func _physics_process(delta: float):
 	if multiplayer.is_server():
 		for player_id in simulated_players:
 			if player_id == 1: continue # Skip the server
+			if not player_input_frame_offsets.get(player_id, null): continue # Skip the first frame 
 			var filtered_snapshot = filter_snapshot_for_client(player_id, snapshot)
 			set_reconcile.rpc_id(player_id, filtered_snapshot)
 	# Clients: Reconcile against the most recent snapshot you were sent
@@ -111,7 +124,7 @@ func filter_snapshot_for_client(player_id: int, snapshot: Dictionary) -> Diction
 	var snapshot_copy = snapshot.duplicate(true)
 	# IMPORTANT: Use snapshot_copy from here out. It will be modified and modify "snapshot" would be BAD.
 	
-	# Set sanapshot frames to the local frame number for each client (back out the offset)
+	# Set snapshot frames to the local frame number for each client (back out the offset)
 	snapshot_copy.frame = current_frame - player_input_frame_offsets[player_id]
 	
 	filter_snapshot_player_data(player_id, snapshot_copy["players"])
@@ -136,42 +149,50 @@ func reconcile():
 	if not snapshot:
 		return
 	
+	if show_debug_visualization:
+		reconcile_debug_players(snapshot["players"])
+	
 	var player_pos = snapshot.players[multiplayer.get_unique_id()].position
 #	print("Reconcile for frame %d has player at %s" % [snapshot.frame, player_pos])
 	
-	var frames_in_the_past = current_frame - snapshot["frame"]
+	var frames_in_the_past = current_frame - snapshot["frame"] - 1
+	
+
 #	print("INFO: Player %d Received %d FRAME reconcile from server frame %d local frame %d" % [multiplayer.get_unique_id(), frames_in_the_past, snapshot.frame, current_frame])
 	# Put ourself in the state represented by this snapshot at its frame
 	reconcile_players(snapshot["players"])
 	reconcile_tracers(snapshot["tracers"])
 	reconcile_hits(snapshot["hits"])
+#	print("DEBUG: Reconciled to snapshot at frame: %d" % snapshot["frame"])
 
-#	print("Before reconcile %s" % simulated_players[multiplayer.get_unique_id()].position)
-	# Replay requested inputs on top of our state to catch back up to current frame
-	if frames_in_the_past < 0:
-#		print("ERROR: Player %d got a reconcile from the future (local frame: %d, reconcile frame %d)" % [snapshot.player_id, current_frame, snapshot.frame])
-		return
-	for frame_in_the_past in range(frames_in_the_past, 0, -1):
-		var player_input_head = (current_frame - frame_in_the_past) % player_input_size
-		var past_input = player_inputs[player_input_head]
-#		print(past_input)
+#	print("DEBUG: Catching up simulation by %d frames (%d to %d)" % [frames_in_the_past, snapshot["frame"] + 1, current_frame - 1])
+	if current_frame % frames_between_self_reconcile == 0:
+		# print("Before reconcile %s" % simulated_players[multiplayer.get_unique_id()].position)
+		# Replay requested inputs on top of our state to catch back up to current frame
+		if frames_in_the_past < 0:
+	#		print("ERROR: Player %d got a reconcile from the future (local frame: %d, reconcile frame %d)" % [snapshot.player_id, current_frame, snapshot.frame])
+			return
+		for frame_in_the_past in range(frames_in_the_past, 0, -1):
+			var player_input_head = (current_frame - frame_in_the_past) % player_input_size
+			var past_input = player_inputs[player_input_head]
 
-		# Resimulate previous frames
-#		print("INFO: Reconcile simulate of frame: %d" % (current_frame - frame_in_the_past))
-		simulate(past_input, 16.666667) # TODO: Do we even need delta?
-	
+			# Resimulate previous frames
+	#		print("INFO: Reconcile simulate of frame: %d" % (current_frame - frame_in_the_past))
+	#		print("DEBUG: %s" % past_input)
+			simulate(past_input)
+		
 #	print("After reconcile %s" % simulated_players[multiplayer.get_unique_id()].position)
 	
 	reconcile_frame = {}
 
 # =========== Hit ==========
-func add_simulated_hit(hit_id: String, position: Vector2):
+func add_simulated_hit(hit_id: String, hit_position: Vector2):
 	var hit = hit_scn.instantiate()
 	if hit_id == "":
 		hit.name = str(hit.get_instance_id())
 	else:
 		hit.name = hit_id
-	hit.position = position
+	hit.position = hit_position
 	simulated_hits.add_child(hit)
 	hit.emitting = true
 
@@ -180,21 +201,17 @@ func reconcile_hits(hit_snapshot_data: Dictionary):
 		if not simulated_hits.get_node_or_null(hit_id):
 			var hit_data = hit_snapshot_data[hit_id]
 			add_simulated_hit(hit_data["id"], hit_data["position"])
+	# Reconcile: We don't reconcile existing tracers, they're very ephemeral
+	# Remove: See above
 
 # ========== Tracer ==========
 func reconcile_tracers(tracer_snapshot_data: Dictionary):
 	for tracer_id in tracer_snapshot_data.keys():
 	# Add
-<<<<<<< HEAD
 		var tracer_data = tracer_snapshot_data[tracer_id]
 		if not simulated_tracers.get_node(tracer_id) \
 		and tracer_data["player_id"] != str(multiplayer.get_unique_id()): # Don't reconcile our personal tracers
 			add_simulated_tracer(tracer_id, tracer_data["player_id"], tracer_data["start"], tracer_data["end"])
-=======
-		if not simulated_tracers.get_node_or_null(tracer_id):
-			var tracer_data = tracer_snapshot_data[tracer_id]
-			add_simulated_tracer(tracer_id, tracer_data["start"], tracer_data["end"])
->>>>>>> 2f2b0b929f6626e665cbe0fbbd30f24d1c00c258
 	# Reconcile: We don't reconcile existing tracers, they're very ephemeral
 	# Remove: See above
 			
@@ -209,6 +226,35 @@ func add_simulated_tracer(tracer_id: String, player_id: String, start: Vector2, 
 	tracer.end = end
 	simulated_tracers.add_child(tracer)
 
+# ========== Debug Rewound Players ==========
+# Brings the server and client simulated players into sync
+func reconcile_debug_players(player_snapshot_data: Dictionary): 
+	for player_id in player_snapshot_data.keys():
+		var player_data = player_snapshot_data[player_id]
+		
+		player_id = str(player_id) + "_debug"
+		var player = debug_players.get_node(str(player_id))
+		
+		# Add
+		if not player:
+			player = add_debug_player(player_id, player_data.position, player_data.rotation)
+		
+		# Reconcile
+		reconcile_debug_player(player, player_data)
+
+func add_debug_player(player_id: String, player_position: Vector2, rotation: float) -> CharacterBody2D:
+	print("Adding DEBUG player to simulation %d" % player_id)
+	var player = debug_player_scn.instantiate()
+	debug_players.add_child(player)
+	player.position = player_position
+	player.rotation = rotation
+	player.name = player_id
+	return player
+
+func reconcile_debug_player(player: CharacterBody2D, player_data: Dictionary):
+	player.position = player_data.position
+	player.rotation = player_data.rotation
+
 # ========== Player ==========
 # Brings the server and client simulated players into sync
 func reconcile_players(player_snapshot_data: Dictionary): 
@@ -220,11 +266,13 @@ func reconcile_players(player_snapshot_data: Dictionary):
 		
 		# Reconcile
 		var player = simulated_players[player_id]
-		reconcile_player(player, player_snapshot_data[player_id])
+		if not player.is_current_player() or current_frame % frames_between_self_reconcile == 0:
+			reconcile_player(player, player_snapshot_data[player_id])
 		
 		# Remove: TODO
 
 func reconcile_player(player: Player, player_data: Dictionary):
+	player.health = player_data.health
 	player.position = player_data.position
 	player.rotation = player_data.rotation
 	player.frames_since_last_shot = player_data.frames_since_last_shot
@@ -249,6 +297,14 @@ func remove_simulated_player(player: Player):
 
 
 # =========== Player Input ===========
+func local_player_input(player_input: Dictionary):
+	var offset = player_input_frame_offsets.get(player_input.player_id, null)
+	if offset == null:
+		player_input_frame_offsets[player_input.player_id] = 0
+
+	var input_idx = (player_input.current_frame)  % player_input_size
+	player_inputs[input_idx][player_input.player_id] = player_input
+
 @rpc("unreliable", "any_peer")
 func accept_player_input(player_input: Dictionary):
 #	print("Input from %d" % player_input.player_id)
@@ -278,7 +334,7 @@ func accept_player_input(player_input: Dictionary):
 		player_input_frame_offsets.erase(player_input.player_id)
 		return
 	
-	var input_idx = (player_frame_in_server_time + delay_processing_by)  % player_input_size
+	var input_idx = player_frame_in_server_time  % player_input_size
 	# Sanity check do we already have input for this frame, should be impossible
 	if player_inputs[input_idx].get(player_input.player_id, null) != null:
 		print(player_inputs[input_idx])
@@ -290,23 +346,41 @@ func accept_player_input(player_input: Dictionary):
 	player_inputs[input_idx][player_input.player_id] = player_input
 
 func handle_direction_input(input: Dictionary):
-	var direction = Vector2(
+	var accel = .3
+	
+	var player = simulated_players[input.player_id]
+	
+	if player.health <= 0:
+		return 
+	
+	var input_direction = Vector2(
 		input.direction.x,
 		input.direction.y
 	).normalized()
-	var player = simulated_players[input.player_id]
-	player.velocity.x = direction.x * player_speed
-	player.velocity.y = direction.y * player_speed
+	
+	var new_velocity = player.velocity.move_toward((input_direction * player_speed), accel)
+	
+	player.velocity.x = new_velocity.x
+	player.velocity.y = new_velocity.y
 	player.move_and_collide(Vector2(player.velocity.x, player.velocity.y))
 
 func handle_rotation_input(input: Dictionary):
 	var player = simulated_players[input.player_id]
+	
+	if player.health <= 0:
+		return 
+	
 	player.rotation = input.rotation
 
 func handle_fire_gun(input: Dictionary):
 	if input.fired:
 		var player: Player = simulated_players[input.player_id]
 		
+		# Can't shoot if dead
+		if player.health <= 0:
+			return
+		
+		# Can't shoot too quickly
 		if player.frames_since_last_shot < 25:
 			return
 		
@@ -324,17 +398,17 @@ func handle_fire_gun(input: Dictionary):
 			end_of_ray = result.position
 			var hit = result.collider
 			
-			# Only servers can validate hits
+			# IMPORTANT: Only servers can validate hits and apply damage
 			if multiplayer.is_server():
 				if hit.is_in_group("player"):
+					var hit_player = hit.get_parent()
+					hit_player.health -= 25
 					add_simulated_hit("", result.position)
 		
 		add_simulated_tracer("", str(player.player), start_of_ray, end_of_ray)
 
-func simulate(inputs: Dictionary, _delta: float):
-#	print("INFO: Simulating server frame: %d (input buffer idx: %d)" % [current_frame, player_input_head])
-	
-	# Hits are only sent in a single frame
+func simulate(inputs: Dictionary):
+#	print("INFO: Simulating server frame.")
 	
 	# Check if we have everyone's input when processing server
 	if multiplayer.is_server():
@@ -346,9 +420,16 @@ func simulate(inputs: Dictionary, _delta: float):
 		var input = inputs[player_id]
 		apply_input_to_simulation(input)
 	
+	
 	# Time-based simulation advancement
-	# Tick up "time since last shot"
 	for player in simulated_players.values():
+		# Time out player's that have died
+		if player.health <= 0:
+			player.frames_since_died += 1
+			if player.frames_since_died >= 200:
+				player.health = 100
+				player.frames_since_died = 0
+		
 		player.frames_since_last_shot += 1
 	
 	# The current, full, state of the server simulation
@@ -362,6 +443,7 @@ func simulate(inputs: Dictionary, _delta: float):
 		snapshot["players"][player_id] = {
 			"position": player.position,
 			"rotation": player.rotation,
+			"health": player.health,
 			# TODO: Filter so its only sent to the player who shot
 			"frames_since_last_shot": player.frames_since_last_shot,
 		}
@@ -390,3 +472,10 @@ func apply_input_to_simulation(input: Dictionary):
 	handle_fire_gun(input)
 	handle_direction_input(input)
 	handle_rotation_input(input)
+
+func get_current_player_position() -> Vector2:
+	for player in simulated_players.values():
+		if player.is_current_player():
+			return player.position
+	return Vector2.ZERO
+		

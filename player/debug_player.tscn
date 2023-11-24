@@ -1,0 +1,14 @@
+[gd_scene load_steps=2 format=3 uid="uid://2ji47kwmwp5b"]
+
+[ext_resource type="Texture2D" uid="uid://ba6q8s83isana" path="res://art/crab.png" id="2_vc8a6"]
+
+[node name="Player" type="CharacterBody2D" groups=["player"]]
+scale = Vector2(2, 2)
+collision_mask = 9
+
+[node name="PlayerSprite2D" type="Sprite2D" parent="."]
+modulate = Color(1, 1, 1, 0.431373)
+texture_filter = 1
+position = Vector2(-5, 0)
+rotation = -1.5708
+texture = ExtResource("2_vc8a6")

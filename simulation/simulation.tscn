@@ -10,3 +10,5 @@ script = ExtResource("1_e34uj")
 [node name="SimulatedTracers" type="Node2D" parent="."]
 
 [node name="SimulatedHit" type="Node2D" parent="."]
+
+[node name="DebugPlayers" type="Node2D" parent="."]
