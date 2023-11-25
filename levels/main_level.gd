@@ -68,6 +68,8 @@ func add_player(id: int):
 	if id == multiplayer.get_unique_id():
 		current_character = player as Player
 		fog_of_war.tracked_player = current_character
+	
+	player.server_acknowledge.rpc_id(player.player)
 
 @rpc("reliable", "call_local")
 func del_player(id: int):

@@ -26,14 +26,15 @@ func _ready():
 	if not is_our_player:
 		return
 	
-	print("Accepting input for player: %s" % multiplayer.get_unique_id())
-	enabled = true
-	
 
 func _physics_process(delta: float):
 #	print("INFO: Player %s sending input for frame %d" % [get_parent().player, current_frame])
 	send_player_input(delta)
 	current_frame += 1
+
+func server_acknowledge():
+	print("Accepting input for player: %s" % multiplayer.get_unique_id())
+	enabled = true
 
 func send_player_input(delta: float):
 	if not enabled:
@@ -63,9 +64,12 @@ func send_player_input(delta: float):
 		
 	# Update our local simulation
 #	print("INFO: Sending input for player %s at local frame %s" % [get_parent().player, current_frame])
-	simulation.local_player_input(player_input)
+#	simulation.local_player_input(player_input)
 
 	# Tell the server about our inputs
 	if not multiplayer.is_server():
 		simulation.accept_player_input.rpc_id(1, player_input)
+	# If we are the server there's not need for RPC, just call func
+	else:
+		simulation.accept_player_input(player_input)
 

@@ -27,7 +27,7 @@ var player_input_frame_offsets := {}
 
 # Every X frames we reconcile the players position with the server
 # Can result in rubberbanding if the server and player disagree on position
-var frames_between_self_reconcile = 10
+var frames_between_self_reconcile = 1
 
 # Player inputs to process
 # See "Minimizing Simulation Divergence" here
@@ -69,27 +69,28 @@ func _ready():
 	frame_buffer.fill([])
 	
 	player_inputs.resize(player_input_size)
-	player_inputs.fill({})
+	for i in range(player_input_size):
+		player_inputs[i] = {}
 	
 func _physics_process(delta: float):
 	process_priority = 1 # Always run the simulation after input
 	
 	# The simulation doesn't start until the player input begins
 	# This ensures that "current_frame" here and in player_input.gd are the same
-	if multiplayer.get_unique_id() not in player_input_frame_offsets:
-		return 
+#	if multiplayer.get_unique_id() not in player_input_frame_offsets:
+#		return 
 
 	if delta * 1000 > desired_frame_time:
 		print("ERROR: Slow simulation frame took %dms" % (delta * 1000))
-	
-	# Get the inputs for the current frame
-	var player_input_head = current_frame % player_input_size
-	var inputs = player_inputs[player_input_head]
 
 	if not multiplayer.is_server() and reconcile_frame:
 #		print("DEBUG: Reconciling to frame " + str(reconcile_frame["frame"]))
 		reconcile()
 #
+	# Get the inputs for the current frame
+	var player_input_head = current_frame % player_input_size
+	var inputs = player_inputs[player_input_head]
+	
 	# This is kind of neat if you think about it, the game only needs two things 
 	# fully simulate: the amount of time that's passed and the player inputs
 #	print("DEBUG: Initial simulate of frame: %d" % current_frame)
@@ -156,7 +157,6 @@ func reconcile():
 #	print("Reconcile for frame %d has player at %s" % [snapshot.frame, player_pos])
 	
 	var frames_in_the_past = current_frame - snapshot["frame"] - 1
-	
 
 #	print("INFO: Player %d Received %d FRAME reconcile from server frame %d local frame %d" % [multiplayer.get_unique_id(), frames_in_the_past, snapshot.frame, current_frame])
 	# Put ourself in the state represented by this snapshot at its frame
@@ -295,16 +295,6 @@ func remove_simulated_player(player: Player):
 	main_level.players.remove_child(player)
 	player.queue_free()
 
-
-# =========== Player Input ===========
-func local_player_input(player_input: Dictionary):
-	var offset = player_input_frame_offsets.get(player_input.player_id, null)
-	if offset == null:
-		player_input_frame_offsets[player_input.player_id] = 0
-
-	var input_idx = (player_input.current_frame)  % player_input_size
-	player_inputs[input_idx][player_input.player_id] = player_input
-
 @rpc("unreliable", "any_peer")
 func accept_player_input(player_input: Dictionary):
 #	print("Input from %d" % player_input.player_id)
@@ -337,7 +327,6 @@ func accept_player_input(player_input: Dictionary):
 	var input_idx = player_frame_in_server_time  % player_input_size
 	# Sanity check do we already have input for this frame, should be impossible
 	if player_inputs[input_idx].get(player_input.player_id, null) != null:
-		print(player_inputs[input_idx])
 		print("WARN: Already have input for player %s at server frame %s (local frame %d, offset %d, buffer_idx %s)" % [player_input.player_id, player_frame_in_server_time, player_input.current_frame, offset, input_idx])
 		return
 	

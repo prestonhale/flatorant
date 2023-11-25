@@ -58,7 +58,11 @@ func _process(delta):
 		torso.get_node("TorsoShape").disabled = false
 		head.get_node("HeadShape").disabled = false
 		dead = false
-		
+
+# Called by the server when it is made aware of this player
+@rpc("reliable", "call_local")
+func server_acknowledge():
+	input.server_acknowledge()
 
 func is_current_player() -> bool:
 	return input.get_multiplayer_authority() == multiplayer.get_unique_id()
