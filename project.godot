@@ -12,7 +12,7 @@ config_version=5
 
 config/name="Flatorant"
 run/main_scene="res://game/game.tscn"
-config/features=PackedStringArray("4.1", "Forward Plus")
+config/features=PackedStringArray("4.2", "Forward Plus")
 config/icon="res://icon.svg"
 
 [autoload]
@@ -23,6 +23,7 @@ MultiplayerLobby="*res://multiplayer/lobby.tscn"
 
 window/size/viewport_width=1920
 window/size/viewport_height=1080
+window/size/initial_position=Vector2i(-200, -200)
 window/stretch/mode="viewport"
 
 [editor]
@@ -71,5 +72,4 @@ exit={
 
 [physics]
 
-common/max_physics_steps_per_frame=1
 common/physics_jitter_fix=0.0

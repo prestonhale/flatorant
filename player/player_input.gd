@@ -9,11 +9,6 @@ var enabled = false
 @export var fired := false
 @export var to_rotation := 0.0
 
-#var frame_time: float = 0
-#var desired_frame_time: float = 16.66 # 1000ms / 60 ticks
-#var desired_frame_time: float = 100 # Slow server for testing
-var current_frame: int = 0
-
 var simulation: Simulation
 
 
@@ -30,7 +25,6 @@ func _ready():
 func _physics_process(delta: float):
 #	print("INFO: Player %s sending input for frame %d" % [get_parent().player, current_frame])
 	send_player_input(delta)
-	current_frame += 1
 
 func server_acknowledge():
 	print("Accepting input for player: %s" % multiplayer.get_unique_id())
@@ -56,20 +50,18 @@ func send_player_input(delta: float):
 	
 	var player_input = {
 		"player_id": get_parent().player,
-		"current_frame": current_frame,
+		"current_frame": simulation.current_frame,
 		"direction": direction,
 		"rotation": to_rotation,
-		"fired": fired
+		"fired": fired,
+		"time": Time.get_ticks_msec()
 	}
 		
 	# Update our local simulation
 #	print("INFO: Sending input for player %s at local frame %s" % [get_parent().player, current_frame])
-#	simulation.local_player_input(player_input)
+	simulation.accept_player_input(player_input)
 
 	# Tell the server about our inputs
 	if not multiplayer.is_server():
 		simulation.accept_player_input.rpc_id(1, player_input)
-	# If we are the server there's not need for RPC, just call func
-	else:
-		simulation.accept_player_input(player_input)
 
