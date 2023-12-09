@@ -19,6 +19,10 @@ var player_scn = preload("res://player/player.tscn")
 var debug_player_scn = preload("res://player/debug_player.tscn")
 var hit_scn = preload("res://simulation/simulated_hit/simulated_hit.tscn")
 
+# Tracers
+var tracer_collision_layers = [2,4] # bullets, walls
+var tracer_collision_bitmask = 0
+
 # The assumed time of a frame in ms
 var default_frame_time = 16.66667 # 60fps
 
@@ -86,6 +90,11 @@ func get_server_time():
 func _ready():
 	frame_buffer.resize(20)
 	frame_buffer.fill([])
+	
+	# Tracer collision setup
+	tracer_collision_bitmask = 0
+	for value in tracer_collision_layers:
+		tracer_collision_bitmask |= (1 << (value - 1))
 	
 	player_inputs.resize(player_input_size)
 	for i in range(player_input_size):
@@ -428,10 +437,12 @@ func handle_fire_gun(input: Dictionary):
 		# Line extending in direction player is facing
 		var end_of_ray = player.global_position + (Vector2.from_angle(player.rotation) * 5000)
 		var space_state = get_world_2d().direct_space_state
-		var query = PhysicsRayQueryParameters2D.create(start_of_ray, end_of_ray, 2)
+
+			
+		var query = PhysicsRayQueryParameters2D.create(start_of_ray, end_of_ray, tracer_collision_bitmask)
 		var result = space_state.intersect_ray(query)
 		
-		if result: # But if it h/its something, use that
+		if result: # But if it hits something, use that
 			end_of_ray = result.position
 			var hit = result.collider
 			

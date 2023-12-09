@@ -53,7 +53,6 @@ collision_priority = 2.0
 position = Vector2(-1.49999, -0.00483416)
 rotation = 0.00241721
 shape = SubResource("RectangleShape2D_7jikk")
-disabled = true
 debug_color = Color(0.631373, 0.027451, 0.372549, 0.419608)
 
 [node name="Head" type="StaticBody2D" parent="." groups=["player"]]
@@ -65,7 +64,6 @@ collision_priority = 2.0
 position = Vector2(-7.49973, -0.000269413)
 rotation = -0.000538441
 shape = SubResource("RectangleShape2D_8jrak")
-disabled = true
 
 [node name="Camera2D" type="Camera2D" parent="."]
 
