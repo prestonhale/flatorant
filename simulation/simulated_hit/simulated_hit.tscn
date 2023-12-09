@@ -3,18 +3,19 @@
 [ext_resource type="Script" path="res://simulation/simulated_hit/simulated_hit.gd" id="1_tg1ya"]
 
 [node name="SmallHitParticles" type="CPUParticles2D"]
+position = Vector2(5, -1)
 emitting = false
 amount = 15
-lifetime = 0.3
+lifetime = 0.15
 one_shot = true
 explosiveness = 1.0
-randomness = 0.3
-lifetime_randomness = 0.3
+randomness = 1.0
+lifetime_randomness = 1.0
 emission_shape = 3
 emission_rect_extents = Vector2(1, 1)
 gravity = Vector2(0, 0)
-initial_velocity_min = 30.0
-initial_velocity_max = 100.0
+initial_velocity_min = 200.0
+initial_velocity_max = 200.0
 scale_amount_min = 4.0
 scale_amount_max = 4.0
 color = Color(0.968627, 0, 0.215686, 1)

@@ -8,6 +8,6 @@ default_color = Color(0, 0.45098, 0.886275, 1)
 script = ExtResource("1_tsivg")
 
 [node name="Timer" type="Timer" parent="."]
-wait_time = 0.1
+wait_time = 0.05
 one_shot = true
 autostart = true

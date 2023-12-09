@@ -26,8 +26,6 @@ var tracer_collision_bitmask = 0
 # The assumed time of a frame in ms
 var default_frame_time = 16.66667 # 60fps
 
-# Debug options
-var show_debug_visualization = true
 
 # The current frame on the server
 var current_frame = 0
@@ -184,7 +182,7 @@ func reconcile():
 	var snapshot := reconcile_frame
 	#print("DEBUG Reconciling. Our current frame: %d. The server's frame: %d." % [current_frame, reconcile_frame.frame])
 	
-	if show_debug_visualization:
+	if debug:
 		reconcile_debug_players(snapshot["players"])
 	
 	var player_pos = snapshot.players[multiplayer.get_unique_id()].position
@@ -244,8 +242,8 @@ func reconcile_tracers(tracer_snapshot_data: Dictionary):
 		if not simulated_tracers.get_node(tracer_id) \
 		and tracer_data["player_id"] != str(multiplayer.get_unique_id()): # Don't reconcile our personal tracers
 			add_simulated_tracer(tracer_id, tracer_data["player_id"], tracer_data["start"], tracer_data["end"])
-	# Reconcile: We don't reconcile existing tracers, they're very ephemeral
-	# Remove: See above
+	 #Reconcile: We don't reconcile existing tracers, they're very ephemeral
+	 #Remove: See above
 			
 func add_simulated_tracer(tracer_id: String, player_id: String, start: Vector2, end: Vector2):
 	var tracer = tracer_scn.instantiate()
@@ -517,8 +515,8 @@ func simulate(inputs: Dictionary):
 	
 func apply_input_to_simulation(input: Dictionary):
 	# Shots must happen before the player's move so they're accurate to what the player saw last frame
-	handle_fire_gun(input)
 	handle_direction_input(input)
+	handle_fire_gun(input)
 	handle_rotation_input(input)
 
 func get_current_player_position() -> Vector2:
