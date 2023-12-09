@@ -38,7 +38,7 @@ var player_input_msec_offsets := {}
 
 # Every X frames we reconcile the players position with the server
 # Can result in rubberbanding if the server and player disagree on position
-var frames_between_self_reconcile = 1
+var frames_between_self_reconcile = 5
 
 # Player inputs to process
 # See "Minimizing Simulation Divergence" here
@@ -189,7 +189,7 @@ func reconcile():
 	if current_frame % frames_between_self_reconcile == 0:
 		var simulate_from_frame = snapshot["frame"] + 1 # We reconciled to snapshot.frame so don't rerun it
 		var simulate_to_frame = current_frame # We don't want to include "current_frame" but the range below is not inclusive so its fine
-		print("INFO: Player %d reconcile from server frame %d -> local %d" % [multiplayer.get_unique_id(), simulate_from_frame, simulate_to_frame])
+		# print("INFO: Player %d reconcile from server frame %d -> local %d" % [multiplayer.get_unique_id(), simulate_from_frame, simulate_to_frame])
 		# print("Before reconcile %s" % simulated_players[multiplayer.get_unique_id()].position)
 		# Replay requested inputs on top of our state to catch back up to current frame
 		for frame_in_the_past in range(simulate_from_frame, simulate_to_frame):
@@ -197,7 +197,7 @@ func reconcile():
 			var past_input = player_inputs[player_input_head]
 
 			#Resimulate presvious frames
-			print("DEBUG: Past input for frame %d (buffer idx %d) %s" % [frame_in_the_past, player_input_head, past_input])
+			#print("DEBUG: Past input for frame %d (buffer idx %d) %s" % [frame_in_the_past, player_input_head, past_input])
 			simulate(past_input)
 			var physics_server = PhysicsServer2D
 			var player = simulated_players[1]
@@ -309,7 +309,7 @@ func add_simulated_player(player_id: int, position: Vector2, rotation: float) ->
 	player.player = player_id
 	player.name = str(player_id)
 	main_level.players.add_child(player)
-	player.input.simulation = self
+	player.player_input.simulation = self
 	return player
 
 func remove_simulated_player(player: Player):
@@ -323,8 +323,8 @@ func accept_player_input(player_input: Dictionary):
 	# Local input, assign it to the next frame and return
 	if player_input.player_id == multiplayer.get_unique_id():
 		var input_idx = player_input.current_frame % player_input_size
-		print("INFO: Assigning player input. Frame: %d. Buffer index %d." % [player_input.current_frame, input_idx])
-		print("DEBUG: Input: %s" % player_input)
+		#print("INFO: Assigning player input. Frame: %d. Buffer index %d." % [player_input.current_frame, input_idx])
+		#print("DEBUG: Input: %s" % player_input)
 		player_inputs[input_idx][player_input.player_id] = player_input
 		return
 	
@@ -400,7 +400,6 @@ func handle_direction_input(input: Dictionary):
 	player.velocity.y = new_velocity.y
 	# https://github.com/godotengine/godot-proposals/issues/2821#issuecomment-854081858
 	player.move_and_collide(input_direction * player_speed)
-	print("=====", Vector2(player.velocity.x, player.velocity.y))
 
 func handle_rotation_input(input: Dictionary):
 	var player = simulated_players[input.player_id]

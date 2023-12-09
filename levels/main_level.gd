@@ -17,7 +17,7 @@ var shot_scn = preload("res://effects/shot/shot.tscn")
 
 var ready_to_simulate = false
 
-var current_character # The character representing our client's player
+var current_character: Player # The character representing our client's player
 
 var PLAYER_COLORS = [
 	Color.RED,
@@ -35,7 +35,7 @@ var line_pos_b = Vector2.ZERO
 # Called when the node enters the scene tree for the first time.
 func _ready():
 	# Process after player nodes
-#	process_priority = 30
+	process_priority = 30
 
 	simulation.main_level = self
 
@@ -82,13 +82,35 @@ func del_player(id: int):
 		simulation.remove_simulated_player(player)
 
 # State should not change here, this function is about DISPLAYING the state
-func _process(delta: float):
+func _physics_process(delta: float):
 	if not ready_to_simulate:
 		return 
-	
+
 	var player_ids = []
 	for player in players.get_children():
 		player_ids.append(int(str(player.name)))
+	
+	# Filter out things the player can't see
+	# TODO: This should be server-side eventually but that's a hard problem to solve
+	set_player_visibility()
+	set_tracer_visibility()
+	set_hit_marker_visibility()
+
+func set_player_visibility():
+	for player_node in players.get_children():
+		var other_player: Player = player_node as Player
+		if current_character.can_see(other_player):
+			other_player.show()
+		else:
+			other_player.hide()
+
+func set_tracer_visibility():
+	pass
+
+func set_hit_marker_visibility():
+	pass
+		
+	
 	
 # Hook up the player to all the systems that track their actions
 func _track_new_player(player: Player):
@@ -155,10 +177,6 @@ func _draw_shot_tracer(point1: Vector2, point2: Vector2):
 	
 func _get_start_pos() -> Node2D:
 	return start_positions.get_child(randi_range(0, (start_positions.get_child_count()-1)))
-
-func _draw():
-	draw_circle(circle_pos, 10, Color.RED)
-#	draw_line(line_pos_a, line_pos_b, Color.YELLOW_GREEN, 2)
 	
 func random_level():
 	var rlevel = [preload("res://levels/vanilla_level.tscn")]

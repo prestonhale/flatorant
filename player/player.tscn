@@ -1,9 +1,9 @@
 [gd_scene load_steps=9 format=3 uid="uid://b001tvur7jlkr"]
 
-[ext_resource type="Script" path="res://preston_wip/character/character.gd" id="1_vid82"]
+[ext_resource type="Script" path="res://player/character.gd" id="1_pyvvx"]
 [ext_resource type="Texture2D" uid="uid://ba6q8s83isana" path="res://art/crab.png" id="2_f4qvb"]
 [ext_resource type="PackedScene" uid="uid://kf8tqdlm8c5t" path="res://addons/vision_cone_2d/vision_cone_2d_template.tscn" id="3_lt0ua"]
-[ext_resource type="Script" path="res://player/player_input.gd" id="5_h4vrq"]
+[ext_resource type="Script" path="res://player/player_input.gd" id="5_b8w0h"]
 [ext_resource type="Script" path="res://simulation/simulated_hit/simulated_hit.gd" id="5_k00w1"]
 
 [sub_resource type="CapsuleShape2D" id="CapsuleShape2D_vsdfj"]
@@ -19,7 +19,7 @@ size = Vector2(8.99946, 16)
 [node name="Player" type="CharacterBody2D" groups=["player"]]
 scale = Vector2(2, 2)
 collision_mask = 9
-script = ExtResource("1_vid82")
+script = ExtResource("1_pyvvx")
 
 [node name="PlayerSprite2D" type="Sprite2D" parent="."]
 texture_filter = 1
@@ -38,10 +38,7 @@ debug_shape = true
 [node name="VisionConeRenderer" parent="VisionCone2D" index="0"]
 color = Color(0.431373, 0.929412, 0.278431, 0)
 
-[node name="VisionConeArea" parent="VisionCone2D" index="1"]
-collision_layer = 4
-
-[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+[node name="PlayerCollisionShape" type="CollisionShape2D" parent="."]
 position = Vector2(-1, -1)
 shape = SubResource("CapsuleShape2D_vsdfj")
 
@@ -50,21 +47,25 @@ shape = SubResource("CapsuleShape2D_vsdfj")
 [node name="Torso" type="StaticBody2D" parent="." groups=["player"]]
 collision_layer = 2
 collision_mask = 0
+collision_priority = 2.0
 
 [node name="TorsoShape" type="CollisionShape2D" parent="Torso"]
 position = Vector2(-1.49999, -0.00483416)
 rotation = 0.00241721
 shape = SubResource("RectangleShape2D_7jikk")
+disabled = true
 debug_color = Color(0.631373, 0.027451, 0.372549, 0.419608)
 
 [node name="Head" type="StaticBody2D" parent="." groups=["player"]]
 collision_layer = 2
 collision_mask = 0
+collision_priority = 2.0
 
 [node name="HeadShape" type="CollisionShape2D" parent="Head"]
 position = Vector2(-7.49973, -0.000269413)
 rotation = -0.000538441
 shape = SubResource("RectangleShape2D_8jrak")
+disabled = true
 
 [node name="Camera2D" type="Camera2D" parent="."]
 
@@ -88,7 +89,7 @@ scale_amount_max = 4.0
 color = Color(0.968627, 0, 0.215686, 1)
 script = ExtResource("5_k00w1")
 
-[node name="Input" type="Node2D" parent="."]
-script = ExtResource("5_h4vrq")
+[node name="PlayerInput" type="Node2D" parent="."]
+script = ExtResource("5_b8w0h")
 
 [editable path="VisionCone2D"]
