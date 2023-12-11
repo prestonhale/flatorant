@@ -25,6 +25,7 @@ window/size/viewport_width=1920
 window/size/viewport_height=1080
 window/size/initial_position=Vector2i(-200, -200)
 window/stretch/mode="viewport"
+window/stretch/scale_mode="integer"
 
 [editor]
 
@@ -69,3 +70,7 @@ exit={
 2d_physics/layer_2="Bullets"
 2d_physics/layer_3="Vision Cones"
 2d_physics/layer_4="Walls"
+
+[rendering]
+
+textures/canvas_textures/default_texture_filter=0
