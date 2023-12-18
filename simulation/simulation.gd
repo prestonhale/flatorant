@@ -40,7 +40,7 @@ var player_input_msec_offsets := {}
 
 # Every X frames we reconcile the players position with the server
 # Can result in rubberbanding if the server and player disagree on position
-var frames_between_self_reconcile = 5
+var frames_between_self_reconcile = 30
 
 # Player inputs to process
 # See "Minimizing Simulation Divergence" here
@@ -185,19 +185,23 @@ func reconcile():
 	if debug:
 		reconcile_debug_players(snapshot["players"])
 	
+	if current_frame % frames_between_self_reconcile == 0:
+		print("Before reconcile %s" % simulated_players[multiplayer.get_unique_id()].frames_since_last_shot)
+	
 	var player_pos = snapshot.players[multiplayer.get_unique_id()].position
 #	print("Reconcile for frame %d has player at %s" % [snapshot.frame, player_pos])
 	# Put ourself in the state represented by this snapshot at its frame
 	reconcile_players(snapshot["players"])
-	reconcile_tracers(snapshot["tracers"])
+	#reconcile_tracers(snapshot["tracers"])
 	reconcile_hits(snapshot["hits"])
 #	print("DEBUG: Reconciled to snapshot at frame: %d" % snapshot["frame"])
 
 	if current_frame % frames_between_self_reconcile == 0:
 		var simulate_from_frame = snapshot["frame"] + 1 # We reconciled to snapshot.frame so don't rerun it
 		var simulate_to_frame = current_frame # We don't want to include "current_frame" but the range below is not inclusive so its fine
-		# print("INFO: Player %d reconcile from server frame %d -> local %d" % [multiplayer.get_unique_id(), simulate_from_frame, simulate_to_frame])
-		# print("Before reconcile %s" % simulated_players[multiplayer.get_unique_id()].position)
+		var frames_count = simulate_to_frame - simulate_from_frame
+		print("INFO: Player %d reconcile from server frame %d -> local %d" % [multiplayer.get_unique_id(), simulate_from_frame, simulate_to_frame, frames_count])
+		print("Before resimulate %s" % simulated_players[multiplayer.get_unique_id()].frames_since_last_shot)
 		# Replay requested inputs on top of our state to catch back up to current frame
 		for frame_in_the_past in range(simulate_from_frame, simulate_to_frame):
 			var player_input_head = frame_in_the_past % player_input_size
@@ -206,12 +210,8 @@ func reconcile():
 			#Resimulate presvious frames
 			#print("DEBUG: Past input for frame %d (buffer idx %d) %s" % [frame_in_the_past, player_input_head, past_input])
 			simulate(past_input)
-			var physics_server = PhysicsServer2D
-			var player = simulated_players[1]
-			var space_rid = physics_server.body_get_space(player.get_rid())
-			#PhysicsServer2D.space_step(space_rid, 16.667)
 		
-#	print("After reconcile %s" % simulated_players[multiplayer.get_unique_id()].position)
+		print("After resimulate %s" % simulated_players[multiplayer.get_unique_id()].frames_since_last_shot)
 	
 	reconcile_frame = {}
 
@@ -425,8 +425,10 @@ func handle_fire_gun(input: Dictionary):
 			return
 		
 		# Can't shoot too quickly
-		if player.frames_since_last_shot < 25:
+		if player.frames_since_last_shot < 50:
 			return
+		
+		print("shoot\n--")
 		
 		player.frames_since_last_shot = 0
 		

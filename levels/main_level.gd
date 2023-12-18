@@ -12,8 +12,10 @@ var shot_scn = preload("res://effects/shot/shot.tscn")
 @onready var ray := $RayCast2D
 @onready var shots_manager := $ShotsManager
 @onready var fog_of_war := $FogOfWar
-@onready var start_positions := $StartPositions
+
 @onready var simulation := $Simulation
+
+var map: Map = null
 
 var ready_to_simulate = false
 
@@ -38,16 +40,17 @@ func _ready():
 	process_priority = 30
 
 	simulation.main_level = self
+	
+	map = random_map()
 
 	for player in MultiplayerLobby.players.values():
 		add_player(player["id"])
 	
 	MultiplayerLobby.player_connected.connect(_on_player_connected)
 	MultiplayerLobby.player_disconnected.connect(_on_player_disconnected)
-	
-	random_level()
 #
 	ready_to_simulate = true
+	
 
 func _on_player_connected(new_player_id: int, new_player_info: Dictionary):
 	print("Added peer: %d" % new_player_id)
@@ -60,7 +63,7 @@ func _on_player_disconnected(player_id: int):
 @rpc("reliable", "call_local")
 func add_player(id: int):
 	print("add_player: %d" % id)
-	var position = _get_start_pos().position
+	var position = _get_start_pos().global_position
 	
 	var player = simulation.add_simulated_player(id, position, 0)
 
@@ -176,15 +179,16 @@ func _draw_shot_tracer(point1: Vector2, point2: Vector2):
 	add_child(shot)
 	
 func _get_start_pos() -> Node2D:
-	return start_positions.get_child(randi_range(0, (start_positions.get_child_count()-1)))
+	return map.start_positions.get_child(randi_range(0, (map.start_positions.get_child_count()-1)))
 	
-func random_level():
+func random_map():
 	var rlevel = [preload("res://levels/vanilla_level.tscn")]
 #	var rlevel = [preload("res://levels/crab_level.tscn"),preload("res://levels/vanilla_level.tscn")]
 	var i = randi_range(0,rlevel.size()-1)
 	var newlevelr = rlevel[i].instantiate()
 	add_child(newlevelr)
 	move_child(newlevelr,0)
+	return newlevelr
 	
 func _unhandled_input(_event: InputEvent):
 	if Input.is_action_just_pressed("exit"):
