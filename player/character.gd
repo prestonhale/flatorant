@@ -20,6 +20,8 @@ signal fired_shot
 # ticks at 60fps
 var frames_since_last_shot: int = 0
 var frames_since_died: int = 0
+
+# Presentation based, not server tracked
 var dead = false
 
 var health: int = 100
@@ -43,41 +45,45 @@ func _ready():
 	else:
 		$VisionCone2D.hide()
 
-func is_predicted() -> bool:
-	return is_current_player()
-
 func reconcile_to(player_data: Dictionary):
 	set_health(player_data.health)
 	position = player_data.position
 	rotation = player_data.rotation
+	frames_since_died = player_data.frames_since_died
 	frames_since_last_shot = player_data.frames_since_last_shot
 
 func simulate():
 	if health <= 0:
 		frames_since_died += 1
-		if frames_since_died >= 200:
+		if frames_since_died >= 100:
 			set_health(100)
 			frames_since_died = 0
 	
 	frames_since_last_shot += 1
 
 func set_health(new_health: int):
+	if not multiplayer.is_server() and multiplayer.get_unique_id() == player:
+		print(new_health)
 	health = new_health
-	
+
+func _process(delta):
+	# Potentially trigger visual changes
 	# We've died
-	if not dead and new_health <= 0:
+	if not dead and health <= 0:
 		death_particles.restart()
 		death_particles.emitting = true
 		sprite.visible = false
 		torso.get_node("TorsoShape").disabled = true
 		head.get_node("HeadShape").disabled = true
+		
 		dead = true
 		
 	# We're alive again!
-	elif dead and new_health > 0:
+	elif dead and health > 0:
 		sprite.visible = true
 		torso.get_node("TorsoShape").disabled = false
 		head.get_node("HeadShape").disabled = false
+		
 		dead = false
 	
 # Called by the server when it is made aware of this player

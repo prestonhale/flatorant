@@ -505,6 +505,7 @@ func simulate(inputs: Dictionary):
 			"health": player.health,
 			# TODO: Filter so its only sent to the player who shot
 			"frames_since_last_shot": player.frames_since_last_shot,
+			"frames_since_died": player.frames_since_died,
 		}
 	
 	snapshot["tracers"] = {}
