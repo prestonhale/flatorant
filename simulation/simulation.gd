@@ -271,7 +271,8 @@ func add_simulated_tracer(tracer_id: int, player_id: int, start: Vector2, end: V
 	tracer.player_id = player_id
 	tracer.start = start
 	tracer.end = end
-	tracer.remaining_time_to_live_in_frames = ttl
+	if ttl != -1: # If -1, use max ttl in the tracer class
+		tracer.remaining_time_to_live_in_frames = ttl
 	simulated_tracers.add_child(tracer)
 
 # ========== Debug Rewound Players ==========
@@ -310,7 +311,7 @@ func reconcile_players(player_snapshot_data: Dictionary):
 		# Add
 		if player_id not in simulated_players.keys():
 			var player_data = player_snapshot_data[player_id]
-			add_simulated_player(player_id, player_data.position, player_data.rotation)
+			add_simulated_player(player_id, player_data.position, player_data.rotation, player_data.velocity)
 		
 		# Reconcile
 		var player = simulated_players[player_id]
@@ -318,7 +319,7 @@ func reconcile_players(player_snapshot_data: Dictionary):
 		
 		# Remove: TODO
 
-func add_simulated_player(player_id: int, position: Vector2, rotation: float) -> Player:
+func add_simulated_player(player_id: int, position: Vector2, rotation: float, velocity: Vector2) -> Player:
 	print("DEBUG: Adding player to simulation %d" % player_id)
 	var player = player_scn.instantiate()
 	simulated_players[player_id] = player
@@ -326,6 +327,7 @@ func add_simulated_player(player_id: int, position: Vector2, rotation: float) ->
 	player.rotation = rotation
 	player.player = player_id
 	player.name = str(player_id)
+	player.velocity = velocity
 	main_level.players.add_child(player)
 	player.player_input.simulation = self
 	return player
@@ -400,8 +402,6 @@ func accept_player_input(player_input: Dictionary):
 	player_inputs[input_idx][player_input.player_id] = player_input
 
 func handle_direction_input(input: Dictionary):
-	var accel = .3
-	
 	var player = simulated_players[input.player_id]
 	
 	if player.health <= 0:
@@ -412,12 +412,12 @@ func handle_direction_input(input: Dictionary):
 		input.direction.y
 	).normalized()
 	
-	var new_velocity = player.velocity.move_toward((input_direction * player_speed), accel)
-	
-	player.velocity.x = new_velocity.x
-	player.velocity.y = new_velocity.y
-	# https://github.com/godotengine/godot-proposals/issues/2821#issuecomment-854081858
-	player.move_and_collide(input_direction * player_speed)
+	var new_velocity = input_direction * player_speed
+	player.velocity = player.velocity.lerp(new_velocity, .1)
+	if (player.velocity - new_velocity).length() <= .5:
+		player.velocity = new_velocity
+
+	player.move_and_collide(player.velocity)
 
 func handle_rotation_input(input: Dictionary):
 	var player = simulated_players[input.player_id]
@@ -436,7 +436,7 @@ func handle_fire_gun(input: Dictionary):
 			return
 		
 		# Can't shoot too quickly
-		if player.frames_since_last_shot < 50:
+		if player.frames_since_last_shot < 30:
 			return
 		
 		player.frames_since_last_shot = 0
@@ -467,7 +467,7 @@ func handle_fire_gun(input: Dictionary):
 		# In this case, "the player and frame where the tracer was generated" is sufficient as
 		# players will only ever generate one tracer per frame
 		var tracer_id = input.player_id + input.current_frame
-		add_simulated_tracer(tracer_id, player.player, start_of_ray, end_of_ray, 10)
+		add_simulated_tracer(tracer_id, player.player, start_of_ray, end_of_ray, -1)
 
 func simulate(inputs: Dictionary):
 	#print("INFO: Simulating server frame.")
@@ -503,6 +503,7 @@ func simulate(inputs: Dictionary):
 			"position": player.position,
 			"rotation": player.rotation,
 			"health": player.health,
+			"velocity": player.velocity,
 			# TODO: Filter so its only sent to the player who shot
 			"frames_since_last_shot": player.frames_since_last_shot,
 			"frames_since_died": player.frames_since_died,

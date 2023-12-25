@@ -49,6 +49,7 @@ func reconcile_to(player_data: Dictionary):
 	set_health(player_data.health)
 	position = player_data.position
 	rotation = player_data.rotation
+	velocity = player_data.velocity
 	frames_since_died = player_data.frames_since_died
 	frames_since_last_shot = player_data.frames_since_last_shot
 

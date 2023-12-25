@@ -65,7 +65,7 @@ func add_player(id: int):
 	print("add_player: %d" % id)
 	var position = _get_start_pos().global_position
 	
-	var player = simulation.add_simulated_player(id, position, 0)
+	var player = simulation.add_simulated_player(id, position, 0, Vector2.ZERO)
 
 	# Fog of war follows only our character
 	if id == multiplayer.get_unique_id():
