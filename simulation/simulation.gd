@@ -479,6 +479,8 @@ func simulate(inputs: Dictionary):
 				print("WARN: Frame %d don't have input for %s" % [current_frame, player_id])
 		
 	for player_id in inputs:
+		if player_id not in simulated_players:
+			continue
 		var input = inputs[player_id]
 		apply_input_to_simulation(input)
 	
