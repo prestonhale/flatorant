@@ -20,9 +20,9 @@ signal fired_shot
 # ticks at 60fps
 var frames_since_last_shot: int = 0
 var frames_since_died: int = 0
+var dead = false
 
 var health: int = 100
-var dead: bool = false
 
 var rrotation: float
 
@@ -43,23 +43,43 @@ func _ready():
 	else:
 		$VisionCone2D.hide()
 
-func _process(delta):
+func is_predicted() -> bool:
+	return is_current_player()
+
+func reconcile_to(player_data: Dictionary):
+	set_health(player_data.health)
+	position = player_data.position
+	rotation = player_data.rotation
+	frames_since_last_shot = player_data.frames_since_last_shot
+
+func simulate():
+	if health <= 0:
+		frames_since_died += 1
+		if frames_since_died >= 200:
+			set_health(100)
+			frames_since_died = 0
+	
+	frames_since_last_shot += 1
+
+func set_health(new_health: int):
+	health = new_health
+	
 	# We've died
-	if health <= 0 and not dead:
+	if not dead and new_health <= 0:
 		death_particles.restart()
 		death_particles.emitting = true
 		sprite.visible = false
 		torso.get_node("TorsoShape").disabled = true
 		head.get_node("HeadShape").disabled = true
 		dead = true
-	
+		
 	# We're alive again!
-	elif health >= 100 and dead:
+	elif dead and new_health > 0:
 		sprite.visible = true
 		torso.get_node("TorsoShape").disabled = false
 		head.get_node("HeadShape").disabled = false
 		dead = false
-
+	
 # Called by the server when it is made aware of this player
 @rpc("reliable", "call_local")
 func server_acknowledge():
@@ -67,7 +87,6 @@ func server_acknowledge():
 
 func is_current_player() -> bool:
 	return player_input.get_multiplayer_authority() == multiplayer.get_unique_id()
-
 
 func set_controls_enabled(is_enabled: bool):
 	player_input.enabled = is_enabled

@@ -40,7 +40,7 @@ var player_input_msec_offsets := {}
 
 # Every X frames we reconcile the players position with the server
 # Can result in rubberbanding if the server and player disagree on position
-var frames_between_self_reconcile = 30
+var frames_between_self_reconcile = 120
 
 # Player inputs to process
 # See "Minimizing Simulation Divergence" here
@@ -114,10 +114,21 @@ func _physics_process(delta: float):
 #	if multiplayer.get_unique_id() not in player_input_frame_offsets:
 #		return 
 
+	# Only reconcile predicted player state occasionally
+	var reconcile_predicted_state = false
+	if current_frame % frames_between_self_reconcile == 0:
+		reconcile_predicted_state = true
+
 	# Clients: Reconcile against the most recent snapshot you were sent
 	if not multiplayer.is_server() and reconcile_frame:
 		#print("DEBUG: Reconciling to frame " + str(reconcile_frame["frame"]))
-		reconcile()
+		reconcile(reconcile_frame)
+	
+		# Replay the player inputs that have ocurred since the reconcile
+		repredict_player_state(reconcile_frame)
+	
+		# IMPORTANT: Done reconciling, reset snapshot
+		reconcile_frame = {}
 #
 	# Get the inputs for the current frame
 	var player_input_head = current_frame % player_input_size
@@ -178,42 +189,35 @@ func set_reconcile(snapshot: Dictionary):
 	
 
 # Update the state of the simulation to match a given snapshot
-func reconcile():
-	var snapshot := reconcile_frame
+func reconcile(snapshot: Dictionary):
 	#print("DEBUG Reconciling. Our current frame: %d. The server's frame: %d." % [current_frame, reconcile_frame.frame])
-	
 	if debug:
 		reconcile_debug_players(snapshot["players"])
-	
-	if current_frame % frames_between_self_reconcile == 0:
-		print("Before reconcile %s" % simulated_players[multiplayer.get_unique_id()].frames_since_last_shot)
 	
 	var player_pos = snapshot.players[multiplayer.get_unique_id()].position
 #	print("Reconcile for frame %d has player at %s" % [snapshot.frame, player_pos])
 	# Put ourself in the state represented by this snapshot at its frame
 	reconcile_players(snapshot["players"])
-	#reconcile_tracers(snapshot["tracers"])
+	reconcile_tracers(snapshot["tracers"])
 	reconcile_hits(snapshot["hits"])
 #	print("DEBUG: Reconciled to snapshot at frame: %d" % snapshot["frame"])
-
-	if current_frame % frames_between_self_reconcile == 0:
-		var simulate_from_frame = snapshot["frame"] + 1 # We reconciled to snapshot.frame so don't rerun it
-		var simulate_to_frame = current_frame # We don't want to include "current_frame" but the range below is not inclusive so its fine
-		var frames_count = simulate_to_frame - simulate_from_frame
-		print("INFO: Player %d reconcile from server frame %d -> local %d" % [multiplayer.get_unique_id(), simulate_from_frame, simulate_to_frame, frames_count])
-		print("Before resimulate %s" % simulated_players[multiplayer.get_unique_id()].frames_since_last_shot)
-		# Replay requested inputs on top of our state to catch back up to current frame
-		for frame_in_the_past in range(simulate_from_frame, simulate_to_frame):
-			var player_input_head = frame_in_the_past % player_input_size
-			var past_input = player_inputs[player_input_head]
-
-			#Resimulate presvious frames
-			#print("DEBUG: Past input for frame %d (buffer idx %d) %s" % [frame_in_the_past, player_input_head, past_input])
-			simulate(past_input)
-		
-		print("After resimulate %s" % simulated_players[multiplayer.get_unique_id()].frames_since_last_shot)
 	
-	reconcile_frame = {}
+
+func repredict_player_state(snapshot: Dictionary):
+	# Replay frames for client-side prediction
+	#if current_frame % frames_between_self_reconcile == 0:
+	var simulate_from_frame = snapshot["frame"] + 1 # We reconciled to snapshot.frame so don't rerun it
+	var simulate_to_frame = current_frame # We don't want to include "current_frame" but the range below is not inclusive so its fine
+	var frames_count = simulate_to_frame - simulate_from_frame
+	#print("INFO: Player %d reconcile from server frame %d -> local %d" % [multiplayer.get_unique_id(), simulate_from_frame, simulate_to_frame, frames_count])
+	# Replay requested inputs on top of our state to catch back up to current frame
+	for frame_in_the_past in range(simulate_from_frame, simulate_to_frame):
+		var player_input_head = frame_in_the_past % player_input_size
+		var past_input = player_inputs[player_input_head]
+
+		#Resimulate presvious frames
+		#print("DEBUG: Past input for frame %d (buffer idx %d) %s" % [frame_in_the_past, player_input_head, past_input])
+		simulate(past_input)
 
 # =========== Hit ==========
 func add_simulated_hit(hit_id: String, hit_position: Vector2):
@@ -236,24 +240,38 @@ func reconcile_hits(hit_snapshot_data: Dictionary):
 
 # ========== Tracer ==========
 func reconcile_tracers(tracer_snapshot_data: Dictionary):
+	var tracers := {}
+	for tracer in simulated_tracers.get_children():
+		tracers[tracer.id] = tracer
+
 	for tracer_id in tracer_snapshot_data.keys():
-	# Add
 		var tracer_data = tracer_snapshot_data[tracer_id]
-		if not simulated_tracers.get_node(tracer_id) \
-		and tracer_data["player_id"] != str(multiplayer.get_unique_id()): # Don't reconcile our personal tracers
-			add_simulated_tracer(tracer_id, tracer_data["player_id"], tracer_data["start"], tracer_data["end"])
-	 #Reconcile: We don't reconcile existing tracers, they're very ephemeral
-	 #Remove: See above
+		# Add: Tracer is not current simulated and is not ours
+		if tracer_id not in tracers.keys():
+			add_simulated_tracer(
+				tracer_id, 
+				tracer_data["player_id"], 
+				tracer_data["start"], 
+				tracer_data["end"],
+				tracer_data.ttl
+				)
+		
+	#Remove: Check that the current tracers are in the snapshot and, if not, delete
+	for tracer_id in tracers.keys():
+		if tracer_id not in tracer_snapshot_data.keys():
+			#print("Removing tracer with id: %d" % cur_tracer.id)
+			tracers[tracer_id].queue_free()
 			
-func add_simulated_tracer(tracer_id: String, player_id: String, start: Vector2, end: Vector2):
+	 #Reconcile: We don't reconcile existing tracers, they're very ephemeral
+			
+func add_simulated_tracer(tracer_id: int, player_id: int, start: Vector2, end: Vector2, ttl: int):
 	var tracer = tracer_scn.instantiate()
-	if tracer_id == "":
-		tracer_id = str(tracer.get_instance_id())
-	tracer.name = tracer_id
+	tracer.name = str(tracer_id)
 	tracer.id = tracer_id
 	tracer.player_id = player_id
 	tracer.start = start
 	tracer.end = end
+	tracer.remaining_time_to_live_in_frames = ttl
 	simulated_tracers.add_child(tracer)
 
 # ========== Debug Rewound Players ==========
@@ -296,16 +314,9 @@ func reconcile_players(player_snapshot_data: Dictionary):
 		
 		# Reconcile
 		var player = simulated_players[player_id]
-		if not player.is_current_player() or current_frame % frames_between_self_reconcile == 0:
-			reconcile_player(player, player_snapshot_data[player_id])
+		player.reconcile_to(player_snapshot_data[player_id])
 		
 		# Remove: TODO
-
-func reconcile_player(player: Player, player_data: Dictionary):
-	player.health = player_data.health
-	player.position = player_data.position
-	player.rotation = player_data.rotation
-	player.frames_since_last_shot = player_data.frames_since_last_shot
 
 func add_simulated_player(player_id: int, position: Vector2, rotation: float) -> Player:
 	print("DEBUG: Adding player to simulation %d" % player_id)
@@ -385,7 +396,7 @@ func accept_player_input(player_input: Dictionary):
 		return
 	
 	var input_idx = player_frame_in_server_time % player_input_size
-	#print("INFO: Assigning player input to buffer index %d" % input_idx)
+	#print("INFO: Assigning player input to buffer 4index %d" % input_idx)
 	player_inputs[input_idx][player_input.player_id] = player_input
 
 func handle_direction_input(input: Dictionary):
@@ -428,8 +439,6 @@ func handle_fire_gun(input: Dictionary):
 		if player.frames_since_last_shot < 50:
 			return
 		
-		print("shoot\n--")
-		
 		player.frames_since_last_shot = 0
 		
 		# Raycast from player to collision
@@ -450,13 +459,18 @@ func handle_fire_gun(input: Dictionary):
 			if multiplayer.is_server():
 				if hit.is_in_group("player"):
 					var hit_player = hit.get_parent()
-					hit_player.health -= 25
+					hit_player.set_health(hit_player.health - 25)
 					add_simulated_hit("", result.position)
 		
-		add_simulated_tracer("", str(player.player), start_of_ray, end_of_ray)
+		# This should be deterministic. The server and client must derive the same
+		# id given the same input
+		# In this case, "the player and frame where the tracer was generated" is sufficient as
+		# players will only ever generate one tracer per frame
+		var tracer_id = input.player_id + input.current_frame
+		add_simulated_tracer(tracer_id, player.player, start_of_ray, end_of_ray, 10)
 
 func simulate(inputs: Dictionary):
-#	print("INFO: Simulating server frame.")
+	#print("INFO: Simulating server frame.")
 	
 	# Check if we have everyone's input when processing server
 	if multiplayer.is_server():
@@ -471,14 +485,9 @@ func simulate(inputs: Dictionary):
 	
 	# Time-based simulation advancement
 	for player in simulated_players.values():
-		# Time out player's that have died
-		if player.health <= 0:
-			player.frames_since_died += 1
-			if player.frames_since_died >= 200:
-				player.health = 100
-				player.frames_since_died = 0
-		
-		player.frames_since_last_shot += 1
+		player.simulate()
+	for tracer in simulated_tracers.get_children():
+		tracer.simulate()
 	
 	# The current, full, state of the server simulation
 	var snapshot = {}
@@ -496,14 +505,14 @@ func simulate(inputs: Dictionary):
 			"frames_since_last_shot": player.frames_since_last_shot,
 		}
 	
-	# TODO: Don't display your own tracers
 	snapshot["tracers"] = {}
 	for tracer in $SimulatedTracers.get_children():
-		snapshot["tracers"][tracer.name] = {
+		snapshot["tracers"][tracer.id] = {
 			"player_id": tracer.player_id,
 			# Global positions
 			"start": tracer.start,
 			"end": tracer.end,
+			"ttl": tracer.remaining_time_to_live_in_frames
 		}
 	
 	snapshot["hits"] = {}
