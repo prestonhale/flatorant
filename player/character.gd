@@ -28,6 +28,10 @@ var health: int = 100
 
 var rrotation: float
 
+var large_gun: Gun = null
+var small_gun: Gun = null
+var held_tool = null
+
 @export var player := 1 :
 	set(id):
 		player = id
@@ -45,6 +49,24 @@ func _ready():
 	else:
 		$VisionCone2D.hide()
 
+func pickup_gun(gun: Gun):
+	if gun.gun_type.is_large:
+		large_gun = gun
+		held_tool = gun
+	else:
+		small_gun = gun
+		held_tool = gun
+	# TODO: Drop current gun if holding one
+
+func change_held(held_selection: PlayerInput.held_selection):
+	match held_selection:
+		PlayerInput.held_selection.LARGE_GUN:
+			if large_gun:
+				held_tool = large_gun
+		PlayerInput.held_selection.SMALL_GUN:
+			if small_gun:
+				held_tool = small_gun
+
 func reconcile_to(player_data: Dictionary):
 	set_health(player_data.health)
 	position = player_data.position
@@ -60,11 +82,9 @@ func simulate():
 			set_health(100)
 			frames_since_died = 0
 	
-	frames_since_last_shot += 1
+	held_tool.simulate()
 
 func set_health(new_health: int):
-	if not multiplayer.is_server() and multiplayer.get_unique_id() == player:
-		print(new_health)
 	health = new_health
 
 func _process(delta):

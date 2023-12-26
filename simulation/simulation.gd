@@ -436,10 +436,10 @@ func handle_fire_gun(input: Dictionary):
 			return
 		
 		# Can't shoot too quickly
-		if player.frames_since_last_shot < 30:
+		if not player.held_tool.can_shoot():
 			return
 		
-		player.frames_since_last_shot = 0
+		player.held_tool.frames_since_last_shot = 0
 		
 		# Raycast from player to collision
 		var start_of_ray = player.global_position
@@ -468,6 +468,11 @@ func handle_fire_gun(input: Dictionary):
 		# players will only ever generate one tracer per frame
 		var tracer_id = input.player_id + input.current_frame
 		add_simulated_tracer(tracer_id, player.player, start_of_ray, end_of_ray, -1)
+
+func handle_change_held(input: Dictionary):
+	if input.change_held != null:
+		var player: Player = simulated_players[input.player_id]
+		player.change_held(input.change_held)
 
 func simulate(inputs: Dictionary):
 	#print("INFO: Simulating server frame.")
@@ -532,6 +537,7 @@ func apply_input_to_simulation(input: Dictionary):
 	# Shots must happen before the player's move so they're accurate to what the player saw last frame
 	handle_direction_input(input)
 	handle_fire_gun(input)
+	handle_change_held(input)
 	handle_rotation_input(input)
 
 func get_current_player_position() -> Vector2:

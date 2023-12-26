@@ -6,6 +6,8 @@ const SPAWN_RANDOM = 5.0
 
 @export var death_timer = 2.0
 
+var gun = preload("res://content/gun.gd")
+var content = preload("res://content/content.gd")
 var shot_scn = preload("res://effects/shot/shot.tscn")
 
 @onready var players := $Players
@@ -71,6 +73,14 @@ func add_player(id: int):
 	if id == multiplayer.get_unique_id():
 		current_character = player as Player
 		fog_of_war.tracked_player = current_character
+
+	var small_gun = gun.new()
+	small_gun.gun_type = content.gun_types.pistol
+	player.pickup_gun(small_gun)
+	
+	var large_gun = gun.new()
+	large_gun.gun_type = content.gun_types.rapid
+	player.pickup_gun(large_gun)
 	
 	player.server_acknowledge.rpc_id(player.player)
 

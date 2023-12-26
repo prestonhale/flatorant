@@ -78,7 +78,6 @@ func load_level(game_scene_path: String):
 	# Add new level.
 	level.add_child(load(game_scene_path).instantiate())
 
-
 # Every peer will call this when they have loaded the game scene.
 @rpc("any_peer", "call_local", "reliable")
 func player_loaded():

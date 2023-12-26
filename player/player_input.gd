@@ -1,5 +1,7 @@
 extends Node2D
 
+class_name PlayerInput
+
 var ray: RayCast2D
 
 var enabled = false
@@ -11,6 +13,10 @@ var enabled = false
 
 var simulation: Simulation
 
+enum held_selection {
+	LARGE_GUN,
+	SMALL_GUN
+}
 
 func _ready():
 	# Always process input first 
@@ -48,13 +54,20 @@ func send_player_input(delta: float):
 	if Input.is_action_pressed("fire"):
 		fired = true
 	
+	var held = null
+	if Input.is_action_pressed("select_large_gun"):
+		held = held_selection.LARGE_GUN
+	elif Input.is_action_pressed("select_small_gun"):
+		held = held_selection.SMALL_GUN
+	
 	var player_input = {
 		"player_id": get_parent().player,
 		"current_frame": simulation.current_frame,
 		"direction": direction,
 		"rotation": to_rotation,
 		"fired": fired,
-		"time": Time.get_ticks_msec()
+		"time": Time.get_ticks_msec(),
+		"change_held": held
 	}
 		
 	# Update our local simulation
