@@ -14,6 +14,7 @@ signal fired_shot
 @onready var torso = $Torso
 @onready var head = $Head
 @onready var death_particles = $DeathParticles
+@onready var crosshair = $Crosshair
 
 # Times tracked by the server
 # Its safe to use "frames" here as the server updates these and only ever
@@ -88,6 +89,14 @@ func set_health(new_health: int):
 	health = new_health
 
 func _process(delta):
+	var crosshair_position = get_crosshair_position()
+	if crosshair_position:
+		crosshair.rotation = 0
+		crosshair.show()
+		crosshair.global_position = crosshair_position
+	#else:
+		#crosshair.hide()
+	
 	# Potentially trigger visual changes
 	# We've died
 	if not dead and health <= 0:
@@ -106,6 +115,17 @@ func _process(delta):
 		head.get_node("HeadShape").disabled = false
 		
 		dead = false
+
+func get_crosshair_position():
+	var space_state = get_world_2d().direct_space_state
+	# Ray cast a very long distance towards (and past) the mouse cursor
+	var direction = (get_global_mouse_position() - position).normalized()
+	var to_position = position + direction * 10000.0 
+	var collision_mask = 1 << 3
+	var query = PhysicsRayQueryParameters2D.create(position, to_position, collision_mask)
+	var result = space_state.intersect_ray(query)
+	if result:
+		return result.position
 	
 # Called by the server when it is made aware of this player
 @rpc("reliable", "call_local")
