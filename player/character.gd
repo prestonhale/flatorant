@@ -17,9 +17,6 @@ signal fired_shot
 @onready var crosshair = $Crosshair
 
 # Times tracked by the server
-# Its safe to use "frames" here as the server updates these and only ever
-# ticks at 60fps
-var frames_since_last_shot: int = 0
 var frames_since_died: int = 0
 
 # Presentation based, not server tracked
@@ -74,7 +71,7 @@ func reconcile_to(player_data: Dictionary):
 	rotation = player_data.rotation
 	velocity = player_data.velocity
 	frames_since_died = player_data.frames_since_died
-	frames_since_last_shot = player_data.frames_since_last_shot
+	held_tool.frames_since_last_shot = player_data.held_tool.frames_since_last_shot
 
 func simulate():
 	if health <= 0:

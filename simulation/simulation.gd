@@ -510,7 +510,9 @@ func simulate(inputs: Dictionary):
 			"health": player.health,
 			"velocity": player.velocity,
 			# TODO: Filter so its only sent to the player who shot
-			"frames_since_last_shot": player.frames_since_last_shot,
+			"held_tool": {
+				"frames_since_last_shot": player.held_tool.frames_since_last_shot
+			},
 			"frames_since_died": player.frames_since_died,
 		}
 	
