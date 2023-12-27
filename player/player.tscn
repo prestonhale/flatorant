@@ -1,11 +1,10 @@
-[gd_scene load_steps=10 format=3 uid="uid://b001tvur7jlkr"]
+[gd_scene load_steps=9 format=3 uid="uid://b001tvur7jlkr"]
 
 [ext_resource type="Script" path="res://player/character.gd" id="1_pyvvx"]
 [ext_resource type="Texture2D" uid="uid://ba6q8s83isana" path="res://art/crab.png" id="2_f4qvb"]
 [ext_resource type="PackedScene" uid="uid://kf8tqdlm8c5t" path="res://addons/vision_cone_2d/vision_cone_2d_template.tscn" id="3_lt0ua"]
 [ext_resource type="Script" path="res://simulation/simulated_hit/simulated_hit.gd" id="5_k00w1"]
 [ext_resource type="Script" path="res://player/player_input.gd" id="5_ricxg"]
-[ext_resource type="Texture2D" uid="uid://dmilrqrvcrr1m" path="res://art/crosshair.png" id="6_fpxkf"]
 
 [sub_resource type="CapsuleShape2D" id="CapsuleShape2D_vsdfj"]
 radius = 7.0
@@ -90,8 +89,5 @@ script = ExtResource("5_k00w1")
 
 [node name="PlayerInput" type="Node2D" parent="."]
 script = ExtResource("5_ricxg")
-
-[node name="Crosshair" type="Sprite2D" parent="."]
-texture = ExtResource("6_fpxkf")
 
 [editable path="VisionCone2D"]

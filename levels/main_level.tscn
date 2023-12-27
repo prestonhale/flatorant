@@ -1,4 +1,4 @@
-[gd_scene load_steps=8 format=3 uid="uid://cg8euce5i76ue"]
+[gd_scene load_steps=9 format=3 uid="uid://cg8euce5i76ue"]
 
 [ext_resource type="Script" path="res://levels/main_level.gd" id="1_3qp07"]
 [ext_resource type="PackedScene" uid="uid://csldvlhbe3o6" path="res://effects/hit_splash/hit_splash.tscn" id="4_bx0ap"]
@@ -6,6 +6,7 @@
 [ext_resource type="Shader" path="res://effects/view_shader/fog.gdshader" id="5_y3ex7"]
 [ext_resource type="PackedScene" uid="uid://8mwgvnmxdgpj" path="res://simulation/simulation.tscn" id="6_glejn"]
 [ext_resource type="Script" path="res://player/view_shader.gd" id="7_i4ne7"]
+[ext_resource type="Texture2D" uid="uid://dmilrqrvcrr1m" path="res://art/crosshair.png" id="7_s4ue4"]
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_3ql3v"]
 shader = ExtResource("5_y3ex7")
@@ -14,7 +15,6 @@ shader_parameter/masking_range = 0.1
 
 [node name="main_level" type="Node2D"]
 script = ExtResource("1_3qp07")
-death_timer = null
 
 [node name="Players" type="Node2D" parent="."]
 
@@ -83,3 +83,7 @@ size = Vector2i(100, 100)
 render_target_update_mode = 4
 
 [node name="Simulation" parent="." instance=ExtResource("6_glejn")]
+
+[node name="Crosshair" type="Sprite2D" parent="."]
+scale = Vector2(2, 2)
+texture = ExtResource("7_s4ue4")

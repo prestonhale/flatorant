@@ -14,7 +14,9 @@ signal fired_shot
 @onready var torso = $Torso
 @onready var head = $Head
 @onready var death_particles = $DeathParticles
-@onready var crosshair = $Crosshair
+
+# The main level will give a reference to the crosshair if you are the main player
+var crosshair
 
 # Times tracked by the server
 var frames_since_died: int = 0
@@ -86,13 +88,14 @@ func set_health(new_health: int):
 	health = new_health
 
 func _process(delta):
-	var crosshair_position = get_crosshair_position()
-	if crosshair_position:
-		crosshair.rotation = 0
-		crosshair.show()
-		crosshair.global_position = crosshair_position
-	#else:
-		#crosshair.hide()
+	if is_current_player():
+		var crosshair_position = get_crosshair_position()
+		if crosshair_position:
+			crosshair.rotation = 0
+			crosshair.show()
+			crosshair.global_position = crosshair_position
+		#else:
+			#crosshair.hide()
 	
 	# Potentially trigger visual changes
 	# We've died

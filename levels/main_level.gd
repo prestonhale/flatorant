@@ -14,6 +14,7 @@ var shot_scn = preload("res://effects/shot/shot.tscn")
 @onready var ray := $RayCast2D
 @onready var shots_manager := $ShotsManager
 @onready var fog_of_war := $FogOfWar
+@onready var crosshair = $Crosshair
 
 @onready var simulation := $Simulation
 
@@ -69,11 +70,16 @@ func add_player(id: int):
 	
 	var player = simulation.add_simulated_player(id, position, 0, Vector2.ZERO)
 
-	# Fog of war follows only our character
+	# Do things specific to "our" player
 	if id == multiplayer.get_unique_id():
+		# Fog of ware only follows our player
 		current_character = player as Player
 		fog_of_war.tracked_player = current_character
-
+		
+		# Crosshahir is only present for our player
+		player.crosshair = crosshair
+	
+	# Add guns to inventory
 	var small_gun = gun.new()
 	small_gun.gun_type = content.gun_types.pistol
 	player.pickup_gun(small_gun)
@@ -82,6 +88,7 @@ func add_player(id: int):
 	large_gun.gun_type = content.gun_types.rapid
 	player.pickup_gun(large_gun)
 	
+	# Player is ready
 	player.server_acknowledge.rpc_id(player.player)
 
 @rpc("reliable", "call_local")
