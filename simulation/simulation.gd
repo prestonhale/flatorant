@@ -443,8 +443,18 @@ func handle_fire_gun(input: Dictionary):
 		
 		# Raycast from player to collision
 		var start_of_ray = player.global_position
+		
+		# Modify the angle of the shot if recoil is in play
+		var angle_of_shot = player.rotation
+		if player.velocity.length() > 0:
+			# The modified angle must feel random but also be deterministic so 
+			# that the client can predict it and the server can derive the same angle
+			var seed = input.current_frame
+			angle_of_shot += generate_random_from_hash(seed)
+		
 		# Line extending in direction player is facing
-		var end_of_ray = player.global_position + (Vector2.from_angle(player.rotation) * 5000)
+		var end_of_ray = player.global_position + (Vector2.from_angle(angle_of_shot) * 5000)
+		
 		var space_state = get_world_2d().direct_space_state
 
 			
@@ -468,6 +478,12 @@ func handle_fire_gun(input: Dictionary):
 		# players will only ever generate one tracer per frame
 		var tracer_id = input.player_id + input.current_frame
 		add_simulated_tracer(tracer_id, player.player, start_of_ray, end_of_ray, -1)
+
+func generate_random_from_hash(data):
+	var hash_value = hash(data)
+	var rng = RandomNumberGenerator.new()
+	rng.seed = hash_value
+	return rng.randf_range(-0.1, 0.1)  # Or any other method to generate a random number
 
 func handle_change_held(input: Dictionary):
 	if input.change_held != null:
