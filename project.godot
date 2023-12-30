@@ -21,7 +21,6 @@ MultiplayerLobby="*res://multiplayer/lobby.tscn"
 
 [display]
 
-window/size/mode=3
 window/stretch/mode="viewport"
 window/stretch/scale_mode="integer"
 

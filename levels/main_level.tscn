@@ -1,87 +1,10 @@
-[gd_scene load_steps=9 format=3 uid="uid://cg8euce5i76ue"]
+[gd_scene load_steps=7 format=3 uid="uid://cg8euce5i76ue"]
 
 [ext_resource type="Script" path="res://levels/main_level.gd" id="1_3qp07"]
-[ext_resource type="PackedScene" uid="uid://csldvlhbe3o6" path="res://effects/hit_splash/hit_splash.tscn" id="4_bx0ap"]
 [ext_resource type="Shader" path="res://effects/view_shader/fog.gdshader" id="5_y3ex7"]
 [ext_resource type="PackedScene" uid="uid://8mwgvnmxdgpj" path="res://simulation/simulation.tscn" id="6_glejn"]
 [ext_resource type="Script" path="res://player/view_shader.gd" id="7_i4ne7"]
 [ext_resource type="Texture2D" uid="uid://dmilrqrvcrr1m" path="res://art/crosshair.png" id="7_s4ue4"]
-
-[sub_resource type="GDScript" id="GDScript_dsgco"]
-script/source = "extends Node2D
-
-@onready var splashes = $Splashes
-
-var shot_scn = preload(\"res://effects/shot/shot.tscn\")
-var splash_index = 0
-
-#func track_player(player: Player):
-#	player.fired_shot.connect(on_player_fired_shot)
-
-# TODO: Include more details about the shot like \"what gun\"
-#func on_player_fired_shot(player: Player):
-##	print(\"on_player_fired_shot\")
-#	var ray = player.get_node(\"Gun\").get_node(\"RayCast2D\")
-#	var shot_pos = ray.get_collision_point()
-#
-#	var collision = ray.get_collider()
-#	var hit_player
-#	var dmg_location
-#	if collision:
-#		hit_player = collision.get_parent() as Player
-#		if collision.name == \"Head\":
-#			shot_pos = ray.get_collision_point()
-#			dmg_location = Health.DamageLocation.head
-#			print(\"Hit Head!\")
-#		elif collision.name == \"Torso\":
-#			# Exclude the torso, check again to see if our shot passesd through
-#			# the head
-#			ray.add_exception(collision)
-#			ray.force_raycast_update()
-#			ray.clear_exceptions()
-#			if ray.is_colliding() and ray.get_collider().name == \"Head\":
-#				# Headshot! Update the hit location.
-#				shot_pos = ray.get_collision_point()
-#				dmg_location = Health.DamageLocation.head
-#				print(\"Hit Head!\")
-#			# No head shot, so this is a regular torso shot
-#			else:
-#				dmg_location = Health.DamageLocation.shoulder
-#				print(\"Hit: Torso!\")
-#
-#	draw_hit_splash.rpc(shot_pos)
-#	draw_tracer.rpc(player.position, shot_pos)
-#
-#	# ==== Server Section ====
-#	if multiplayer.is_server():
-#		# Hits must be confirmed on the server to be valid
-#		if hit_player:
-#			hit_player.take_hit.rpc(shot_pos, dmg_location)
-
-@rpc(\"call_local\")
-func draw_hit_splash(shot_pos: Vector2):
-#	print(\"draw_hit_splash\")
-	
-	var splash = splashes.get_child(splash_index)
-	splash.global_position = shot_pos
-	add_child(splash)
-	splash.restart()
-	splash.emitting = true
-	
-	# Move index up, restart if needed
-	splash_index += 1
-	if splash_index > splashes.get_child_count() - 1:
-		splash_index = 0
-
-
-@rpc(\"call_local\")
-func draw_tracer(start: Vector2, end: Vector2):
-#	print(\"draw_tracer\")
-	var shot = shot_scn.instantiate()
-	shot.add_point(start)
-	shot.add_point(end)
-	add_child(shot)
-"
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_3ql3v"]
 shader = ExtResource("5_y3ex7")
@@ -114,21 +37,6 @@ position = Vector2(207, 1021)
 collision_mask = 4
 hit_from_inside = true
 collide_with_areas = true
-
-[node name="ShotsManager" type="Node2D" parent="."]
-script = SubResource("GDScript_dsgco")
-
-[node name="Splashes" type="Node2D" parent="ShotsManager"]
-
-[node name="HitSplash" parent="ShotsManager/Splashes" instance=ExtResource("4_bx0ap")]
-
-[node name="HitSplash2" parent="ShotsManager/Splashes" instance=ExtResource("4_bx0ap")]
-
-[node name="HitSplash3" parent="ShotsManager/Splashes" instance=ExtResource("4_bx0ap")]
-
-[node name="HitSplash4" parent="ShotsManager/Splashes" instance=ExtResource("4_bx0ap")]
-
-[node name="HitSplash5" parent="ShotsManager/Splashes" instance=ExtResource("4_bx0ap")]
 
 [node name="FogOfWar" type="TextureRect" parent="."]
 material = SubResource("ShaderMaterial_3ql3v")
