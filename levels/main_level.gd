@@ -12,7 +12,6 @@ var shot_scn = preload("res://effects/shot/shot.tscn")
 
 @onready var players := $Players
 @onready var ray := $RayCast2D
-@onready var shots_manager := $ShotsManager
 @onready var fog_of_war := $FogOfWar
 @onready var crosshair = $Crosshair
 
@@ -199,7 +198,7 @@ func _get_start_pos() -> Node2D:
 	return map.start_positions.get_child(randi_range(0, (map.start_positions.get_child_count()-1)))
 	
 func random_map():
-	var rlevel = [preload("res://levels/vanilla_level.tscn")]
+	var rlevel = [preload("res://levels/main_level_1.tscn")]
 #	var rlevel = [preload("res://levels/crab_level.tscn"),preload("res://levels/vanilla_level.tscn")]
 	var i = randi_range(0,rlevel.size()-1)
 	var newlevelr = rlevel[i].instantiate()

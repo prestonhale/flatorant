@@ -21,9 +21,7 @@ MultiplayerLobby="*res://multiplayer/lobby.tscn"
 
 [display]
 
-window/size/viewport_width=1920
-window/size/viewport_height=1080
-window/size/initial_position=Vector2i(-200, -200)
+window/size/mode=3
 window/stretch/mode="viewport"
 window/stretch/scale_mode="integer"
 
