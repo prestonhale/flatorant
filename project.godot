@@ -13,6 +13,7 @@ config_version=5
 config/name="Flatorant"
 run/main_scene="res://game/game.tscn"
 config/features=PackedStringArray("4.2", "Forward Plus")
+run/max_fps=60
 config/icon="res://icon.svg"
 
 [autoload]
@@ -21,6 +22,8 @@ MultiplayerLobby="*res://multiplayer/lobby.tscn"
 
 [display]
 
+window/size/viewport_width=1280
+window/size/viewport_height=720
 window/stretch/mode="viewport"
 window/stretch/scale_mode="integer"
 
@@ -77,6 +80,10 @@ select_small_gun={
 2d_physics/layer_2="Bullets"
 2d_physics/layer_3="Vision Cones"
 2d_physics/layer_4="Walls"
+
+[physics]
+
+common/physics_jitter_fix=0.0
 
 [rendering]
 

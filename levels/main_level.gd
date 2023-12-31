@@ -129,8 +129,6 @@ func set_tracer_visibility():
 func set_hit_marker_visibility():
 	pass
 		
-	
-	
 # Hook up the player to all the systems that track their actions
 func _track_new_player(player: Player):
 	if player.player == multiplayer.get_unique_id():

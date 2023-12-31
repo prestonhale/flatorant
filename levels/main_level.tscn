@@ -45,20 +45,17 @@ default_fog_color = Color(0, 0, 0, 0.172549)
 
 [node name="TextureRect" type="TextureRect" parent="FogOfWar"]
 layout_mode = 0
-offset_left = -701.0
-offset_top = -726.0
-offset_right = -661.0
-offset_bottom = -686.0
+offset_right = 40.0
+offset_bottom = 40.0
 
 [node name="SubViewportContainer" type="SubViewportContainer" parent="FogOfWar"]
+visibility_layer = 0
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
-offset_left = -295.0
-offset_top = -1309.0
-offset_right = 205.0
-offset_bottom = -809.0
+offset_right = 500.0
+offset_bottom = 500.0
 grow_horizontal = 2
 grow_vertical = 2
 

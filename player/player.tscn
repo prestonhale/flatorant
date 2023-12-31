@@ -20,6 +20,7 @@ size = Vector2(8.99946, 16)
 scale = Vector2(1.5, 1.5)
 collision_mask = 9
 script = ExtResource("1_pyvvx")
+PLAYER_VISION_LIMIT = 200
 
 [node name="PlayerSprite2D" type="Sprite2D" parent="."]
 texture_filter = 1
@@ -65,8 +66,6 @@ position = Vector2(-7.49973, -0.000269413)
 rotation = -0.000538441
 shape = SubResource("RectangleShape2D_8jrak")
 
-[node name="Camera2D" type="Camera2D" parent="."]
-
 [node name="DeathParticles" type="CPUParticles2D" parent="."]
 emitting = false
 amount = 30
@@ -89,5 +88,9 @@ script = ExtResource("5_k00w1")
 
 [node name="PlayerInput" type="Node2D" parent="."]
 script = ExtResource("5_ricxg")
+
+[node name="Camera2D" type="Camera2D" parent="."]
+position_smoothing_enabled = true
+position_smoothing_speed = 25.0
 
 [editable path="VisionCone2D"]

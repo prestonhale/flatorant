@@ -49,14 +49,14 @@ func _process(_delta: float):
 	else:
 		player = tracked_player
 	
-	# Update the fog of war's position
-	position = player.position - (get_viewport_rect().size/2)
+	# Update the fog of war's position to match the camera (centering it)
+	global_position = get_viewport().get_camera_2d().get_screen_center_position() - (get_viewport_rect().size/2)
 	
 	# Update the subviewport polygon to match the player's polygon
 	if not view_polygon:
 		view_polygon = player.vision_cone.write_polygon2d.duplicate()
 		view_polygon.color = Color.WHITE
-		view_polygon.scale = Vector2(2, 2)
+		view_polygon.scale = player.scale
 		subviewport.add_child(view_polygon)
 	view_polygon.position = player.get_global_transform_with_canvas().origin
 #	view_polygon.offset = get_global_transform().origin

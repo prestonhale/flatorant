@@ -2,7 +2,9 @@ extends CharacterBody2D
 
 class_name Player
 
-const SPEED = 400
+# Configs
+@export var PLAYER_VISION_LIMIT = 240
+@export var SPEED = 400
 
 signal fired_shot
 
@@ -10,12 +12,12 @@ signal fired_shot
 @onready var vision_cone = $VisionCone2D
 @onready var vision_cone_area = $VisionCone2D/VisionConeArea
 @onready var sprite = $PlayerSprite2D
-@onready var camera = $Camera2D
 @onready var torso = $Torso
 @onready var head = $Head
 @onready var death_particles = $DeathParticles
+@onready var camera = $Camera2D
 
-# The main level will give a reference to the crosshair if you are the main player
+# The main level will give a reference to these if you are the main player
 var crosshair
 
 # Times tracked by the server
@@ -32,7 +34,7 @@ var large_gun: Gun = null
 var small_gun: Gun = null
 var held_tool = null
 
-@export var player := 1 :
+var player := 1 :
 	set(id):
 		player = id
 		# You can't use "input" here because this assignment happens BEFORE 
@@ -94,8 +96,11 @@ func _process(delta):
 			crosshair.rotation = 0
 			crosshair.show()
 			crosshair.global_position = crosshair_position
-		#else:
-			#crosshair.hide()
+		
+		var pos_distance = get_local_mouse_position().length()
+		if pos_distance > 20 and pos_distance < PLAYER_VISION_LIMIT:
+			camera.position = get_local_mouse_position()
+		
 	
 	# Potentially trigger visual changes
 	# We've died
@@ -120,7 +125,7 @@ func get_crosshair_position():
 	var space_state = get_world_2d().direct_space_state
 	# Ray cast a very long distance towards (and past) the mouse cursor
 	var direction = (get_global_mouse_position() - position).normalized()
-	var to_position = position + direction * 10000.0 
+	var to_position = position + direction * PLAYER_VISION_LIMIT
 	var collision_mask = 1 << 3
 	var query = PhysicsRayQueryParameters2D.create(position, to_position, collision_mask)
 	var result = space_state.intersect_ray(query)
