@@ -22,9 +22,10 @@ MultiplayerLobby="*res://multiplayer/lobby.tscn"
 
 [display]
 
-window/size/viewport_width=1280
-window/size/viewport_height=720
-window/stretch/mode="viewport"
+window/size/viewport_width=639
+window/size/viewport_height=359
+window/size/mode=3
+window/stretch/mode="canvas_items"
 window/stretch/scale_mode="integer"
 
 [editor]
