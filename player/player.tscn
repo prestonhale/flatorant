@@ -7,8 +7,8 @@
 [ext_resource type="Script" path="res://player/player_input.gd" id="5_ricxg"]
 
 [sub_resource type="CapsuleShape2D" id="CapsuleShape2D_vsdfj"]
-radius = 7.0
-height = 37.0
+radius = 9.09091
+height = 39.3939
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_7jikk"]
 size = Vector2(13, 37.9975)
@@ -38,11 +38,9 @@ debug_shape = true
 color = Color(0.431373, 0.929412, 0.278431, 0)
 
 [node name="PlayerCollisionShape" type="CollisionShape2D" parent="."]
-position = Vector2(-1, -1)
+position = Vector2(-3, -5.96046e-08)
 scale = Vector2(0.66, 0.66)
 shape = SubResource("CapsuleShape2D_vsdfj")
-
-[node name="Collision" type="Node2D" parent="."]
 
 [node name="Torso" type="StaticBody2D" parent="." groups=["player"]]
 collision_layer = 2
