@@ -1,7 +1,7 @@
 [gd_scene load_steps=9 format=3 uid="uid://ig82qvja135b"]
 
-[ext_resource type="FontFile" uid="uid://divk8fhqyqbdc" path="res://ui/connect_to_lobby/Valorant Font.ttf" id="2_v0ch6"]
-[ext_resource type="Script" path="res://ui/connect_to_lobby/connect_to_lobby.gd" id="3_do616"]
+[ext_resource type="FontFile" uid="uid://divk8fhqyqbdc" path="res://game/Valorant Font.ttf" id="2_v0ch6"]
+[ext_resource type="Script" path="res://game/connect_to_lobby.gd" id="3_do616"]
 [ext_resource type="Texture2D" uid="uid://ba6q8s83isana" path="res://art/crab.png" id="4_6ow2m"]
 
 [sub_resource type="Theme" id="Theme_x852h"]
