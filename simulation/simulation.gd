@@ -16,6 +16,7 @@ var fake_additional_player_latency_ms = 100
 
 var tracer_scn = preload("res://simulation/simulated_tracer/simulated_tracer.tscn")
 var player_scn = preload("res://player/player.tscn")
+var Utils = preload("res://utils.gd")
 var debug_player_scn = preload("res://player/debug_player.tscn")
 var hit_scn = preload("res://simulation/simulated_hit/simulated_hit.tscn")
 
@@ -50,10 +51,6 @@ var player_input_frame_map := {}
 var player_input_size = 30
 var reconcile_tail_size # Keep this many frames to reconcile against (~160ms)
 var player_inputs: Array[Dictionary] = []
-
-# Player clock times
-# player_id -> []pings_in_ms
-var player_pings = {}
 
 # The most recent server frame to reconcile agains
 var reconcile_frame: Dictionary = {}
@@ -362,8 +359,6 @@ func accept_player_input(player_input: Dictionary):
 		msec_offset = server_time - player_input.time
 		player_input_msec_offsets[player_input.player_id] = msec_offset
 		
-		player_pings[player_input.player_id] = msec_offset * 2
-		
 		print("INFO: Got first input for player %s: offset %d" % [player_input.player_id, offset])
 	
 	# Calculate time it took for this command to reach the server in ms
@@ -371,12 +366,6 @@ func accept_player_input(player_input: Dictionary):
 		var latency_from_player = current_frame - offset - player_input.current_frame
 		var latency_from_player_ms = server_time - msec_offset - player_input.time
 		#print("DEBUG: latency_from_player: frame %d, ms %d" % [latency_from_player, latency_from_player_ms])
-
-	# Slowly move towards more recent pings
-	player_pings[player_input.player_id] = (
-		(player_pings[player_input.player_id] * 10) 
-		+ (server_time - player_input.time)
-	)/11
 	
 	var player_frame_in_server_time = player_input.current_frame + offset
 	if debug:
@@ -428,9 +417,12 @@ func handle_rotation_input(input: Dictionary):
 	player.rotation = input.rotation
 
 func handle_fire_gun(input: Dictionary):
-	if input.fired:
-		var player: Player = simulated_players[input.player_id]
+	var player: Player = simulated_players[input.player_id]
+	
+	if not input.fired and player.held_tool.can_shoot():
+		player.held_tool.consecutive_shots = 0
 		
+	if input.fired:
 		# Can't shoot if dead
 		if player.health <= 0:
 			return
@@ -439,18 +431,21 @@ func handle_fire_gun(input: Dictionary):
 		if not player.held_tool.can_shoot():
 			return
 		
+		player.held_tool.consecutive_shots += 1
 		player.held_tool.frames_since_last_shot = 0
 		
 		# Raycast from player to collision
 		var start_of_ray = player.global_position
 		
-		# Modify the angle of the shot if recoil is in play
-		var angle_of_shot = player.rotation
+		# Modify the angle by the spray pattern of the gun
+		var angle_of_shot = player.rotation + player.held_tool.get_spray_angle(input.current_frame)
+		
+		# Modify the angle of the shot by a movement penalty if the player is moving
 		if player.velocity.length() > 0:
 			# The modified angle must feel random but also be deterministic so 
 			# that the client can predict it and the server can derive the same angle
 			var seed = input.current_frame
-			angle_of_shot += generate_random_from_hash(seed)
+			angle_of_shot += Utils.generate_random_from_hash(seed) * player.held_tool.gun_type.movement_penalty
 		
 		# Line extending in direction player is facing
 		var end_of_ray = player.global_position + (Vector2.from_angle(angle_of_shot) * 5000)
@@ -479,11 +474,7 @@ func handle_fire_gun(input: Dictionary):
 		var tracer_id = input.player_id + input.current_frame
 		add_simulated_tracer(tracer_id, player.player, start_of_ray, end_of_ray, -1)
 
-func generate_random_from_hash(data):
-	var hash_value = hash(data)
-	var rng = RandomNumberGenerator.new()
-	rng.seed = hash_value
-	return rng.randf_range(-0.1, 0.1)  # Or any other method to generate a random number
+
 
 func handle_change_held(input: Dictionary):
 	if input.change_held != null:
@@ -527,6 +518,7 @@ func simulate(inputs: Dictionary):
 			"velocity": player.velocity,
 			# TODO: Filter so its only sent to the player who shot
 			"held_tool": {
+				"consecutive_shots": player.held_tool.consecutive_shots,
 				"frames_since_last_shot": player.held_tool.frames_since_last_shot
 			},
 			"frames_since_died": player.frames_since_died,

@@ -1,0 +1,10 @@
+[gd_scene load_steps=3 format=3 uid="uid://cv8n6gvljr284"]
+
+[ext_resource type="Texture2D" uid="uid://cou8md8h8abb7" path="res://art/theme_tiles.png" id="1_quvqp"]
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_nyvgt"]
+atlas = ExtResource("1_quvqp")
+region = Rect2(33, 157, 31, 30)
+
+[node name="PlantMid" type="Sprite2D"]
+texture = SubResource("AtlasTexture_nyvgt")
