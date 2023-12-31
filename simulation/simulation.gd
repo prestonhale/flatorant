@@ -418,7 +418,7 @@ func handle_direction_input(input: Dictionary):
 		player.velocity = new_velocity
 
 	player.move_and_collide(player.velocity)
-
+	
 func handle_rotation_input(input: Dictionary):
 	var player = simulated_players[input.player_id]
 	

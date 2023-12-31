@@ -9,7 +9,6 @@ var enabled = false
 @export var direction := Vector2()
 @export var mouse_position := Vector2()
 @export var fired := false
-@export var to_rotation := 0.0
 
 var simulation: Simulation
 
@@ -44,12 +43,6 @@ func send_player_input(delta: float):
 	if new_direction != direction:
 		direction = new_direction
 		
-	# https://www.reddit.com/r/godot/comments/uugo9l/can_anyone_explain_how_the_look_at_function_works/
-	mouse_position = get_local_mouse_position()
-	var new_to_rotation = atan2(mouse_position.y, mouse_position.x) + global_rotation
-	if new_to_rotation != to_rotation:
-		to_rotation = new_to_rotation
-		
 	fired = false
 	if Input.is_action_pressed("fire"):
 		fired = true
@@ -64,7 +57,7 @@ func send_player_input(delta: float):
 		"player_id": get_parent().player,
 		"current_frame": simulation.current_frame,
 		"direction": direction,
-		"rotation": to_rotation,
+		"rotation": get_parent().rotation,
 		"fired": fired,
 		"time": Time.get_ticks_msec(),
 		"change_held": held

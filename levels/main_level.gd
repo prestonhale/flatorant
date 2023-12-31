@@ -14,7 +14,7 @@ var shot_scn = preload("res://effects/shot/shot.tscn")
 @onready var ray := $RayCast2D
 @onready var fog_of_war := $FogOfWar
 @onready var crosshair = $Crosshair
-
+@onready var main_camera = $MainCamera
 @onready var simulation := $Simulation
 
 var map: Map = null
@@ -71,9 +71,14 @@ func add_player(id: int):
 
 	# Do things specific to "our" player
 	if id == multiplayer.get_unique_id():
-		# Fog of ware only follows our player
 		current_character = player as Player
+		
+		# Fog of war only follows our player
 		fog_of_war.tracked_player = current_character
+		
+		# Assign the camera
+		main_camera.make_current()
+		main_camera.current_player = current_character
 		
 		# Crosshahir is only present for our player
 		player.crosshair = crosshair

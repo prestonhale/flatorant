@@ -14,7 +14,6 @@ signal fired_shot
 @onready var torso = $Torso
 @onready var head = $Head
 @onready var death_particles = $DeathParticles
-@onready var camera = $Camera2D
 
 # The main level will give a reference to these if you are the main player
 var crosshair
@@ -46,7 +45,6 @@ func _ready():
 	# Process this script after "PlayerInput"
 	process_priority = 20
 	if is_current_player():
-		camera.make_current()
 		$VisionCone2D.max_distance = PLAYER_VISION_LIMIT
 	else:
 		$VisionCone2D.hide()
@@ -91,13 +89,13 @@ func set_health(new_health: int):
 
 func _process(delta):
 	if is_current_player():
-		var crosshair_position = get_crosshair_position()
-		if crosshair_position:
-			crosshair.rotation = 0
-			crosshair.show()
-			crosshair.global_position = crosshair_position
+		# https://www.reddit.com/r/godot/comments/uugo9l/can_anyone_explain_how_the_look_at_function_works/
+		var mouse_position = get_local_mouse_position()
+		rotation = atan2(mouse_position.y, mouse_position.x) + global_rotation
+			
+		var crosshair_position = get_global_mouse_position()
+		crosshair.global_position = crosshair_position
 		
-		camera.position = get_local_mouse_position().normalized() * (PLAYER_VISION_LIMIT/2)
 	
 	# Potentially trigger visual changes
 	# We've died
@@ -119,6 +117,7 @@ func _process(delta):
 		dead = false
 
 func get_crosshair_position():
+	return get_global_mouse_position()
 	var space_state = get_world_2d().direct_space_state
 	# Ray cast a very long distance towards (and past) the mouse cursor
 	var direction = (get_global_mouse_position() - position).normalized()

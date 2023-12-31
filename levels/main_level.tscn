@@ -1,8 +1,9 @@
-[gd_scene load_steps=7 format=3 uid="uid://cg8euce5i76ue"]
+[gd_scene load_steps=8 format=3 uid="uid://cg8euce5i76ue"]
 
 [ext_resource type="Script" path="res://levels/main_level.gd" id="1_3qp07"]
 [ext_resource type="Shader" path="res://effects/view_shader/fog.gdshader" id="5_y3ex7"]
 [ext_resource type="PackedScene" uid="uid://8mwgvnmxdgpj" path="res://simulation/simulation.tscn" id="6_glejn"]
+[ext_resource type="Script" path="res://levels/main_camera.gd" id="6_qor8o"]
 [ext_resource type="Script" path="res://player/view_shader.gd" id="7_i4ne7"]
 [ext_resource type="Texture2D" uid="uid://dmilrqrvcrr1m" path="res://art/crosshair.png" id="7_s4ue4"]
 
@@ -69,3 +70,12 @@ render_target_update_mode = 4
 [node name="Crosshair" type="Sprite2D" parent="."]
 scale = Vector2(2, 2)
 texture = ExtResource("7_s4ue4")
+
+[node name="MainCamera" type="Camera2D" parent="."]
+position_smoothing_speed = 25.0
+rotation_smoothing_speed = 25.0
+script = ExtResource("6_qor8o")
+
+[node name="Debug" type="Label" parent="MainCamera"]
+offset_right = 40.0
+offset_bottom = 23.0

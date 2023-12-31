@@ -17,4 +17,5 @@ func _on_connect_pressed():
 func _on_host_pressed():
 	MultiplayerLobby.create_game()
 	hide()
+	Input.mouse_mode = Input.MOUSE_MODE_HIDDEN
 	
