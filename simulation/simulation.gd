@@ -19,6 +19,7 @@ var player_scn = preload("res://player/player.tscn")
 var Utils = preload("res://utils.gd")
 var debug_player_scn = preload("res://player/debug_player.tscn")
 var hit_scn = preload("res://simulation/simulated_hit/simulated_hit.tscn")
+var big_hit_scn = preload("res://simulation/simulated_hit/simulated_big_hit.tscn")
 
 # Tracers
 var tracer_collision_layers = [2,4] # bullets, walls
@@ -217,21 +218,27 @@ func repredict_player_state(snapshot: Dictionary):
 		simulate(past_input)
 
 # =========== Hit ==========
-func add_simulated_hit(hit_id: String, hit_position: Vector2):
-	var hit = hit_scn.instantiate()
+func add_simulated_hit(hit_id: String, hit_position: Vector2, rotation: int, big_hit: bool):
+	var hit
+	if big_hit:
+		hit = big_hit_scn.instantiate()
+	else:
+		hit = hit_scn.instantiate()
+	
 	if hit_id == "":
 		hit.name = str(hit.get_instance_id())
 	else:
 		hit.name = hit_id
-	hit.position = hit_position
 	simulated_hits.add_child(hit)
+	hit.position = hit_position
+	hit.rotation = rotation
 	hit.emitting = true
 
 func reconcile_hits(hit_snapshot_data: Dictionary):
 	for hit_id in hit_snapshot_data.keys():
 		if not simulated_hits.get_node_or_null(hit_id):
 			var hit_data = hit_snapshot_data[hit_id]
-			add_simulated_hit(hit_data["id"], hit_data["position"])
+			add_simulated_hit(hit_data["id"], hit_data["position"], hit_data["rotation"], hit_data.big)
 	# Reconcile: We don't reconcile existing tracers, they're very ephemeral
 	# Remove: See above
 
@@ -451,27 +458,33 @@ func handle_fire_gun(input: Dictionary):
 		
 		# Line extending in direction player is facing
 		var end_of_ray = player.global_position + (Vector2.from_angle(angle_of_shot) * 5000)
+		var end_of_tracer = end_of_ray
 		
 		var space_state = get_world_2d().direct_space_state
 
-			
-		var query = PhysicsRayQueryParameters2D.create(start_of_ray, end_of_ray, tracer_collision_bitmask)
+		var ray_vector = end_of_ray - start_of_ray
+		var query = PhysicsRayQueryParameters2D.create(
+			start_of_ray, 
+			end_of_ray, 
+			tracer_collision_bitmask
+		)
 		var result = space_state.intersect_ray(query)
 		
 		if result: # But if it hits something, use that
-			end_of_ray = result.position
+			end_of_tracer = result.position
 			var hit = result.collider
 			
 			# IMPORTANT: Only servers can validate hits and apply damage
 			if multiplayer.is_server():
 				if hit.is_in_group("player"):
-					print("Debug: Detected hit")
+					#print("Debug: Detected hit")
 					var hit_player = hit.get_parent()
 					# Hit head without crossing torso, this generally doesn't happen as the head is 
 					# almost entirely within the torso collider
 					if hit.name == "Head":
-						print("DEBUG: Headshot without recast")
+						#print("DEBUG: Headshot without recast")
 						hit_player.set_health(hit_player.health - gun.gun_type.head_damage)
+						add_simulated_hit("", result.position, ray_vector.angle(), false)
 					if hit.name == "Torso":
 						# Recast and see if this actually intersects the head
 						var recast_query = PhysicsRayQueryParameters2D.create(
@@ -480,27 +493,27 @@ func handle_fire_gun(input: Dictionary):
 							tracer_collision_bitmask,
 							[result.rid] # Exclude previously hit torso
 						)
-						print(tracer_collision_bitmask)
 						var recast_result = space_state.intersect_ray(recast_query)
-						if recast_result:
-							print(recast_result.collider.name)
 						if recast_result and recast_result.collider.name == "Head":
-							print("DEBUG: Found headshot on recast")
+							#print("DEBUG: Found headshot on recast")
 							hit_player.set_health(hit_player.health - gun.gun_type.head_damage)
-							result = recast_result
+							add_simulated_hit("", recast_result.position, ray_vector.angle(), true)
 						# Actually just a Torso hit
 						else:
 							print("DEBUG: Still torso shot on recast")
 							hit_player.set_health(hit_player.health - gun.gun_type.body_damage)
-					# TODO: Distinguish between head and body
-					add_simulated_hit("", result.position)
+							add_simulated_hit("", result.position, ray_vector.angle(), false)
 		
 		# This should be deterministic. The server and client must derive the same
 		# id given the same input
 		# In this case, "the player and frame where the tracer was generated" is sufficient as
 		# players will only ever generate one tracer per frame
 		var tracer_id = input.player_id + input.current_frame
-		add_simulated_tracer(tracer_id, player.player, start_of_ray, end_of_ray, -1)
+		add_simulated_tracer(tracer_id, player.player, start_of_ray, end_of_tracer, -1)
+
+
+func vector_to_degrees(vector: Vector2) -> int:
+	return rad_to_deg(vector.angle())
 
 
 
@@ -565,7 +578,9 @@ func simulate(inputs: Dictionary):
 	snapshot["hits"] = {}
 	for hit in simulated_hits.get_children():
 		snapshot["hits"][hit.name] = {
+			"big": hit.big,
 			"position": hit.position,
+			"rotation": hit.rotation,
 			"id": hit.name
 		}
 

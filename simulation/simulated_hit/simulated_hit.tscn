@@ -3,7 +3,6 @@
 [ext_resource type="Script" path="res://simulation/simulated_hit/simulated_hit.gd" id="1_tg1ya"]
 
 [node name="SmallHitParticles" type="CPUParticles2D"]
-position = Vector2(5, -1)
 emitting = false
 amount = 15
 lifetime = 0.15

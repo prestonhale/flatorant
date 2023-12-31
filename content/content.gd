@@ -7,7 +7,7 @@ const gun_types = {
 		"is_large": false,
 		"movement_penalty": 0.2,
 		"body_damage": 25,
-		"head_damage": 100,
+		"head_damage": 150,
 		"spray_pattern": [
 			0
 		]
@@ -17,7 +17,7 @@ const gun_types = {
 		"magazine_size": 25,
 		"is_large": true,
 		"body_damage": 25,
-		"head_damage": 100,
+		"head_damage": 150,
 		"movement_penalty": 0.2,
 		"spray_pattern": [
 			0., 

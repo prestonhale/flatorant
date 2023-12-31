@@ -15,6 +15,9 @@ signal fired_shot
 @onready var head = $Head
 @onready var death_particles = $DeathParticles
 
+# Config
+static var INITIAL_HEALTH = 150
+
 # The main level will give a reference to these if you are the main player
 var crosshair
 
@@ -24,7 +27,7 @@ var frames_since_died: int = 0
 # Presentation based, not server tracked
 var dead = false
 
-var health: int = 100
+var health: int = 150
 
 var rrotation: float
 
@@ -80,7 +83,7 @@ func simulate():
 	if health <= 0:
 		frames_since_died += 1
 		if frames_since_died >= 100:
-			set_health(100)
+			set_health(INITIAL_HEALTH)
 			frames_since_died = 0
 	
 	held_tool.simulate()

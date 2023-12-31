@@ -14,7 +14,7 @@ height = 39.3939
 size = Vector2(10.2572, 26.0023)
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_8jrak"]
-size = Vector2(7.99569, 20.0022)
+size = Vector2(2.99946, 4)
 
 [node name="Player" type="CharacterBody2D" groups=["player"]]
 collision_mask = 9
@@ -59,7 +59,7 @@ collision_mask = 0
 collision_priority = 2.0
 
 [node name="HeadShape" type="CollisionShape2D" parent="Head"]
-position = Vector2(-3.00323, 0.00107813)
+position = Vector2(-6, 1.19209e-07)
 rotation = -0.000538441
 shape = SubResource("RectangleShape2D_8jrak")
 
@@ -78,8 +78,8 @@ spread = 180.0
 gravity = Vector2(0, 0)
 initial_velocity_min = 160.0
 initial_velocity_max = 200.0
-scale_amount_min = 4.0
-scale_amount_max = 4.0
+scale_amount_min = 2.0
+scale_amount_max = 2.0
 color = Color(0.968627, 0, 0.215686, 1)
 script = ExtResource("5_k00w1")
 
