@@ -11,10 +11,10 @@ radius = 9.09091
 height = 39.3939
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_7jikk"]
-size = Vector2(13, 37.9975)
+size = Vector2(10.2572, 26.0023)
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_8jrak"]
-size = Vector2(8.99946, 16)
+size = Vector2(7.99569, 20.0022)
 
 [node name="Player" type="CharacterBody2D" groups=["player"]]
 collision_mask = 9
@@ -48,7 +48,7 @@ collision_mask = 0
 collision_priority = 2.0
 
 [node name="TorsoShape" type="CollisionShape2D" parent="Torso"]
-position = Vector2(-1.49999, -0.00483416)
+position = Vector2(-2.87137, 0.000310926)
 rotation = 0.00241721
 shape = SubResource("RectangleShape2D_7jikk")
 debug_color = Color(0.631373, 0.027451, 0.372549, 0.419608)
@@ -59,7 +59,7 @@ collision_mask = 0
 collision_priority = 2.0
 
 [node name="HeadShape" type="CollisionShape2D" parent="Head"]
-position = Vector2(-7.49973, -0.000269413)
+position = Vector2(-3.00323, 0.00107813)
 rotation = -0.000538441
 shape = SubResource("RectangleShape2D_8jrak")
 

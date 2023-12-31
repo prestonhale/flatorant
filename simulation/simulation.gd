@@ -426,9 +426,11 @@ func handle_fire_gun(input: Dictionary):
 		# Can't shoot if dead
 		if player.health <= 0:
 			return
+			
+		var gun = player.held_tool
 		
 		# Can't shoot too quickly
-		if not player.held_tool.can_shoot():
+		if not gun.can_shoot():
 			return
 		
 		player.held_tool.consecutive_shots += 1
@@ -438,14 +440,14 @@ func handle_fire_gun(input: Dictionary):
 		var start_of_ray = player.global_position
 		
 		# Modify the angle by the spray pattern of the gun
-		var angle_of_shot = player.rotation + player.held_tool.get_spray_angle(input.current_frame)
+		var angle_of_shot = player.rotation + gun.get_spray_angle(input.current_frame)
 		
 		# Modify the angle of the shot by a movement penalty if the player is moving
 		if player.velocity.length() > 0:
 			# The modified angle must feel random but also be deterministic so 
 			# that the client can predict it and the server can derive the same angle
 			var seed = input.current_frame
-			angle_of_shot += Utils.generate_random_from_hash(seed) * player.held_tool.gun_type.movement_penalty
+			angle_of_shot += Utils.generate_random_from_hash(seed) * gun.gun_type.movement_penalty
 		
 		# Line extending in direction player is facing
 		var end_of_ray = player.global_position + (Vector2.from_angle(angle_of_shot) * 5000)
@@ -463,8 +465,34 @@ func handle_fire_gun(input: Dictionary):
 			# IMPORTANT: Only servers can validate hits and apply damage
 			if multiplayer.is_server():
 				if hit.is_in_group("player"):
+					print("Debug: Detected hit")
 					var hit_player = hit.get_parent()
-					hit_player.set_health(hit_player.health - 25)
+					# Hit head without crossing torso, this generally doesn't happen as the head is 
+					# almost entirely within the torso collider
+					if hit.name == "Head":
+						print("DEBUG: Headshot without recast")
+						hit_player.set_health(hit_player.health - gun.gun_type.head_damage)
+					if hit.name == "Torso":
+						# Recast and see if this actually intersects the head
+						var recast_query = PhysicsRayQueryParameters2D.create(
+							start_of_ray, 
+							end_of_ray, 
+							tracer_collision_bitmask,
+							[result.rid] # Exclude previously hit torso
+						)
+						print(tracer_collision_bitmask)
+						var recast_result = space_state.intersect_ray(recast_query)
+						if recast_result:
+							print(recast_result.collider.name)
+						if recast_result and recast_result.collider.name == "Head":
+							print("DEBUG: Found headshot on recast")
+							hit_player.set_health(hit_player.health - gun.gun_type.head_damage)
+							result = recast_result
+						# Actually just a Torso hit
+						else:
+							print("DEBUG: Still torso shot on recast")
+							hit_player.set_health(hit_player.health - gun.gun_type.body_damage)
+					# TODO: Distinguish between head and body
 					add_simulated_hit("", result.position)
 		
 		# This should be deterministic. The server and client must derive the same

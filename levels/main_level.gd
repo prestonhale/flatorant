@@ -198,7 +198,8 @@ func _draw_shot_tracer(point1: Vector2, point2: Vector2):
 	add_child(shot)
 	
 func _get_start_pos() -> Node2D:
-	return map.start_positions.get_child(randi_range(0, (map.start_positions.get_child_count()-1)))
+	var enabled_pos = map.start_positions.get_children().filter(func(pos): return pos.enabled)
+	return enabled_pos[randi_range(0, (enabled_pos.size()-1))]
 	
 func random_map():
 	var rlevel = [preload("res://levels/deathmatch_level.tscn")]

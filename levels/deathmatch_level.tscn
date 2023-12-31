@@ -24,18 +24,22 @@ script = ExtResource("2_uuwha")
 
 [node name="DeathmatchStartPosition" parent="StartPositions" instance=ExtResource("3_ntd8v")]
 position = Vector2(24, 42)
+enabled = false
 
 [node name="DeathmatchStartPosition2" parent="StartPositions" instance=ExtResource("3_ntd8v")]
-position = Vector2(957, 48)
+position = Vector2(355, -127)
 
 [node name="DeathmatchStartPosition3" parent="StartPositions" instance=ExtResource("3_ntd8v")]
 position = Vector2(184, 975)
+enabled = false
 
 [node name="DeathmatchStartPosition4" parent="StartPositions" instance=ExtResource("3_ntd8v")]
 position = Vector2(655, 371)
+enabled = false
 
 [node name="DeathmatchStartPosition5" parent="StartPositions" instance=ExtResource("3_ntd8v")]
 position = Vector2(549, 844)
+enabled = false
 
 [node name="DeathmatchStartPosition6" parent="StartPositions" instance=ExtResource("3_ntd8v")]
 position = Vector2(482, -26)
