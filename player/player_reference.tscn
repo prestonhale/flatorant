@@ -1,0 +1,23 @@
+[gd_scene load_steps=2 format=3 uid="uid://b53tqobjwd4sd"]
+
+[ext_resource type="Texture2D" uid="uid://ba6q8s83isana" path="res://art/crab.png" id="1_lc2wk"]
+
+[node name="PlayerReference" type="Node2D"]
+
+[node name="PlayerSprite2D" type="Sprite2D" parent="."]
+texture_filter = 1
+rotation = -1.5708
+scale = Vector2(0.66, 0.66)
+texture = ExtResource("1_lc2wk")
+
+[node name="ScreenSize" type="ReferenceRect" parent="."]
+offset_left = -320.0
+offset_top = -180.0
+offset_right = 320.0
+offset_bottom = 180.0
+
+[node name="CanSee" type="ReferenceRect" parent="."]
+offset_left = -480.0
+offset_top = -340.0
+offset_right = 480.0
+offset_bottom = 340.0
