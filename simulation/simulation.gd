@@ -71,7 +71,7 @@ var main_level: MainLevel
 
 var delay_processing_by = 3 # Number of frames to buffer
 
-@export var player_speed = 5
+@export var PLAYER_SPEED = 2.5
 
 # THE SIMULATION
 var previous_frame_time = 0
@@ -412,7 +412,7 @@ func handle_direction_input(input: Dictionary):
 		input.direction.y
 	).normalized()
 	
-	var new_velocity = input_direction * player_speed
+	var new_velocity = input_direction * PLAYER_SPEED
 	player.velocity = player.velocity.lerp(new_velocity, .1)
 	if (player.velocity - new_velocity).length() <= .5:
 		player.velocity = new_velocity

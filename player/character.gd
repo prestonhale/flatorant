@@ -3,8 +3,7 @@ extends CharacterBody2D
 class_name Player
 
 # Configs
-@export var PLAYER_VISION_LIMIT = 240
-@export var SPEED = 400
+@export var PLAYER_VISION_LIMIT = 320
 
 signal fired_shot
 
@@ -48,6 +47,7 @@ func _ready():
 	process_priority = 20
 	if is_current_player():
 		camera.make_current()
+		$VisionCone2D.max_distance = PLAYER_VISION_LIMIT
 	else:
 		$VisionCone2D.hide()
 
@@ -97,10 +97,7 @@ func _process(delta):
 			crosshair.show()
 			crosshair.global_position = crosshair_position
 		
-		var pos_distance = get_local_mouse_position().length()
-		if pos_distance > 20 and pos_distance < PLAYER_VISION_LIMIT:
-			camera.position = get_local_mouse_position()
-		
+		camera.position = get_local_mouse_position().normalized() * (PLAYER_VISION_LIMIT/2)
 	
 	# Potentially trigger visual changes
 	# We've died
@@ -125,12 +122,14 @@ func get_crosshair_position():
 	var space_state = get_world_2d().direct_space_state
 	# Ray cast a very long distance towards (and past) the mouse cursor
 	var direction = (get_global_mouse_position() - position).normalized()
-	var to_position = position + direction * PLAYER_VISION_LIMIT
+	var to_position = position + (direction * PLAYER_VISION_LIMIT)
 	var collision_mask = 1 << 3
 	var query = PhysicsRayQueryParameters2D.create(position, to_position, collision_mask)
 	var result = space_state.intersect_ray(query)
 	if result:
 		return result.position
+	else:
+		return position + (direction * PLAYER_VISION_LIMIT)
 	
 # Called by the server when it is made aware of this player
 @rpc("reliable", "call_local")

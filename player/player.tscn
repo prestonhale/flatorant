@@ -17,22 +17,21 @@ size = Vector2(13, 37.9975)
 size = Vector2(8.99946, 16)
 
 [node name="Player" type="CharacterBody2D" groups=["player"]]
-scale = Vector2(0.66, 0.66)
+visible = false
 collision_mask = 9
 script = ExtResource("1_pyvvx")
-PLAYER_VISION_LIMIT = 200
 
 [node name="PlayerSprite2D" type="Sprite2D" parent="."]
 texture_filter = 1
 position = Vector2(-5, 0)
 rotation = -1.5708
+scale = Vector2(0.66, 0.66)
 texture = ExtResource("2_f4qvb")
 
 [node name="VisionCone2D" parent="." instance=ExtResource("3_lt0ua")]
 rotation = -1.5708
 angle_deg = 60
 ray_count = 50
-max_distance = 800.0
 collision_layer_mask = 8
 debug_shape = true
 
@@ -41,6 +40,7 @@ color = Color(0.431373, 0.929412, 0.278431, 0)
 
 [node name="PlayerCollisionShape" type="CollisionShape2D" parent="."]
 position = Vector2(-1, -1)
+scale = Vector2(0.66, 0.66)
 shape = SubResource("CapsuleShape2D_vsdfj")
 
 [node name="Collision" type="Node2D" parent="."]
