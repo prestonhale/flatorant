@@ -446,8 +446,9 @@ func handle_fire_gun(input: Dictionary):
 			return
 		
 		player.held_tool.consecutive_shots += 1
-		player.held_tool.frames_since_last_shot = 0
 		player.held_tool.cur_ammo -= 1
+		player.held_tool.frames_in_cur_state = 0
+		player.held_tool.state = Gun.GunState.RESETTING
 		gun_changed.emit(player.held_tool)
 		
 		# Raycast from player to collision
@@ -518,11 +519,14 @@ func handle_fire_gun(input: Dictionary):
 		var tracer_id = input.player_id + input.current_frame
 		add_simulated_tracer(tracer_id, player.player, start_of_ray, end_of_tracer, -1)
 
+func handle_reload(input: Dictionary):
+	if input.reload:
+		var player: Player = simulated_players[input.player_id]
+		player.held_tool.reload()
+		gun_changed.emit(player.held_tool)
 
 func vector_to_degrees(vector: Vector2) -> int:
 	return rad_to_deg(vector.angle())
-
-
 
 func handle_change_held(input: Dictionary):
 	if input.change_held != null:
@@ -568,8 +572,8 @@ func simulate(inputs: Dictionary):
 			# TODO: Filter so its only sent to the player who shot
 			"held_tool": {
 				"consecutive_shots": player.held_tool.consecutive_shots,
-				"frames_since_last_shot": player.held_tool.frames_since_last_shot,
-				"cur_ammo": player.held_tool.cur_ammo
+				"cur_ammo": player.held_tool.cur_ammo,
+				"frames_in_cur_state": player.held_tool.frames_in_cur_state,
 			},
 			"frames_since_died": player.frames_since_died,
 		}

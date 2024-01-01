@@ -2,23 +2,40 @@ extends RefCounted
 
 class_name Gun
 
+enum GunState {
+	READY,
+	RELOADING,
+	RESETTING
+}
+
 var Utils = preload("res://utils.gd")
 
 var gun_type
 
 var cur_ammo: int
-var frames_since_last_shot: int = 500
 var consecutive_shots: int = 0
+var state: GunState
+var frames_in_cur_state: int = 0
 
 func simulate():
-	frames_since_last_shot += 1
-	
-func is_ready() -> bool:
-	return frames_since_last_shot >= gun_type.rate_of_fire
+	frames_in_cur_state += 1
+	match state:
+		GunState.RELOADING:
+			print(frames_in_cur_state)
+			if frames_in_cur_state >= gun_type.reload_time:
+				cur_ammo = gun_type.max_ammo
+				state = GunState.READY
+		GunState.RESETTING:
+			if frames_in_cur_state >= gun_type.rate_of_fire:
+				state = GunState.READY
+
+func reload():
+	if state == GunState.READY:
+		frames_in_cur_state = 0
+		state = GunState.RELOADING
 
 func can_shoot() -> bool:
-	var has_ammo = cur_ammo > 0
-	return has_ammo and is_ready()
+	return cur_ammo > 0 and state == GunState.READY
 
 func get_spray_angle(hash: int) -> float:
 	if consecutive_shots >= gun_type.spray_pattern.size():

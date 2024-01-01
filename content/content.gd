@@ -3,6 +3,7 @@ extends Resource
 const gun_types = {
 	"pistol": {
 		"name": "pistol",
+		"reload_time": 60,
 		"rate_of_fire": 45,
 		"max_ammo": 6,
 		"is_large": false,
@@ -15,6 +16,7 @@ const gun_types = {
 	},
 	"rapid": {
 		"name": "rifle",
+		"reload_time": 100,
 		"rate_of_fire": 8,
 		"max_ammo": 25,
 		"is_large": true,
