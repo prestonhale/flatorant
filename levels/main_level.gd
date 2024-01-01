@@ -94,6 +94,9 @@ func add_player(id: int):
 	
 	# Player is ready
 	player.server_acknowledge.rpc_id(player.player)
+	
+	if player.is_current_player():
+		player.held_tool.gun_changed.connect(func(args): simulation.gun_changed.emit(args))
 
 @rpc("reliable", "call_local")
 func del_player(id: int):

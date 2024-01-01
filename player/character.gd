@@ -76,6 +76,7 @@ func reconcile_to(player_data: Dictionary):
 	rotation = player_data.rotation
 	velocity = player_data.velocity
 	frames_since_died = player_data.frames_since_died
+	held_tool.cur_ammo = player_data.held_tool.cur_ammo
 	held_tool.consecutive_shots = player_data.held_tool.consecutive_shots
 	held_tool.frames_in_cur_state = player_data.held_tool.frames_in_cur_state
 

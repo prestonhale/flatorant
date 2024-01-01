@@ -339,6 +339,7 @@ func add_simulated_player(player_id: int, position: Vector2, rotation: float, ve
 	main_level.players.add_child(player)
 	player.player_input.simulation = self
 	player.resurrected.connect(on_player_ressurrected)
+		
 	return player
 
 func remove_simulated_player(player: Player):
@@ -449,7 +450,9 @@ func handle_fire_gun(input: Dictionary):
 		player.held_tool.cur_ammo -= 1
 		player.held_tool.frames_in_cur_state = 0
 		player.held_tool.state = Gun.GunState.RESETTING
-		gun_changed.emit(player.held_tool)
+		
+		if player.is_current_player():
+			gun_changed.emit(player.held_tool)
 		
 		# Raycast from player to collision
 		var start_of_ray = player.global_position
@@ -523,7 +526,8 @@ func handle_reload(input: Dictionary):
 	if input.reload:
 		var player: Player = simulated_players[input.player_id]
 		player.held_tool.reload()
-		gun_changed.emit(player.held_tool)
+		if player.is_current_player():
+			gun_changed.emit(player.held_tool)
 
 func vector_to_degrees(vector: Vector2) -> int:
 	return rad_to_deg(vector.angle())
@@ -532,7 +536,12 @@ func handle_change_held(input: Dictionary):
 	if input.change_held != null:
 		var player: Player = simulated_players[input.player_id]
 		player.change_held(input.change_held)
-		gun_changed.emit(player.held_tool)
+		if player.is_current_player():
+			gun_changed.emit(player.held_tool)
+		
+		# Forward gun changed signal from current players gun to simulation
+		if player.is_current_player():
+			player.held_tool.gun_changed.connect(func(args): gun_changed.emit(args))
 
 func simulate(inputs: Dictionary):
 	#print("INFO: Simulating server frame.")

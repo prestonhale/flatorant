@@ -2,6 +2,8 @@ extends RefCounted
 
 class_name Gun
 
+signal gun_changed
+
 enum GunState {
 	READY,
 	RELOADING,
@@ -21,10 +23,10 @@ func simulate():
 	frames_in_cur_state += 1
 	match state:
 		GunState.RELOADING:
-			print(frames_in_cur_state)
 			if frames_in_cur_state >= gun_type.reload_time:
 				cur_ammo = gun_type.max_ammo
 				state = GunState.READY
+				gun_changed.emit(self)
 		GunState.RESETTING:
 			if frames_in_cur_state >= gun_type.rate_of_fire:
 				state = GunState.READY
