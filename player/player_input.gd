@@ -53,12 +53,17 @@ func send_player_input(delta: float):
 	elif Input.is_action_pressed("select_small_gun"):
 		held = held_selection.SMALL_GUN
 	
+	var reload = false
+	if Input.is_action_pressed("reload"):
+		reload = true
+	
 	var player_input = {
 		"player_id": get_parent().player,
 		"current_frame": simulation.current_frame,
 		"direction": direction,
 		"rotation": get_parent().rotation,
 		"fired": fired,
+		"reload": reload,
 		"time": Time.get_ticks_msec(),
 		"change_held": held
 	}

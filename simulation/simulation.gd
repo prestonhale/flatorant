@@ -600,6 +600,7 @@ func apply_input_to_simulation(input: Dictionary):
 	handle_direction_input(input)
 	handle_fire_gun(input)
 	handle_change_held(input)
+	handle_reload(input)
 	handle_rotation_input(input)
 
 func get_current_player_position() -> Vector2:
