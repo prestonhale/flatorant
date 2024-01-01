@@ -203,7 +203,6 @@ func reconcile(snapshot: Dictionary):
 	reconcile_tracers(snapshot["tracers"])
 	reconcile_hits(snapshot["hits"])
 #	print("DEBUG: Reconciled to snapshot at frame: %d" % snapshot["frame"])
-	
 
 func repredict_player_state(snapshot: Dictionary):
 	# Replay frames for client-side prediction
@@ -216,10 +215,9 @@ func repredict_player_state(snapshot: Dictionary):
 	for frame_in_the_past in range(simulate_from_frame, simulate_to_frame):
 		var player_input_head = frame_in_the_past % player_input_size
 		var past_input = player_inputs[player_input_head]
-
 		#Resimulate presvious frames
 		#print("DEBUG: Past input for frame %d (buffer idx %d) %s" % [frame_in_the_past, player_input_head, past_input])
-		simulate(past_input)
+		simulate(past_input, true)
 
 # =========== Hit ==========
 func add_simulated_hit(hit_id: String, hit_position: Vector2, rotation: int, big_hit: bool):
@@ -248,29 +246,31 @@ func reconcile_hits(hit_snapshot_data: Dictionary):
 
 # ========== Tracer ==========
 func reconcile_tracers(tracer_snapshot_data: Dictionary):
-	var tracers := {}
+	var existing_tracer_ids = []
+	#
 	for tracer in simulated_tracers.get_children():
-		tracers[tracer.id] = tracer
-
+		## Reconcile
+		#if tracer_snapshot_data.get(tracer.id):
+			#pass
+			#print("rec")
+			#tracer.reconcile_to(tracer_snapshot_data[tracer.id])
+		# Remove
+		#else:
+			#tracer.queue_free()
+		existing_tracer_ids.append(tracer.id)
+	
 	for tracer_id in tracer_snapshot_data.keys():
 		var tracer_data = tracer_snapshot_data[tracer_id]
-		# Add: Tracer is not current simulated and is not ours
-		if tracer_id not in tracers.keys():
+		# Add: Tracer is not currently simulated and is not ours
+		if tracer_id not in existing_tracer_ids:
 			add_simulated_tracer(
 				tracer_id, 
 				tracer_data["player_id"], 
 				tracer_data["start"], 
 				tracer_data["end"],
-				tracer_data.ttl
-				)
-		
-	#Remove: Check that the current tracers are in the snapshot and, if not, delete
-	for tracer_id in tracers.keys():
-		if tracer_id not in tracer_snapshot_data.keys():
-			#print("Removing tracer with id: %d" % cur_tracer.id)
-			tracers[tracer_id].queue_free()
-			
-	 #Reconcile: We don't reconcile existing tracers, they're very ephemeral
+				tracer_data["ttl"]
+			)
+
 			
 func add_simulated_tracer(tracer_id: int, player_id: int, start: Vector2, end: Vector2, ttl: int):
 	var tracer = tracer_scn.instantiate()
@@ -511,7 +511,7 @@ func handle_fire_gun(input: Dictionary):
 							add_simulated_hit("", recast_result.position, ray_vector.angle(), true)
 						# Actually just a Torso hit
 						else:
-							print("DEBUG: Still torso shot on recast")
+							#print("DEBUG: Still torso shot on recast")
 							hit_player.set_health(hit_player.health - gun.gun_type.body_damage)
 							add_simulated_hit("", result.position, ray_vector.angle(), false)
 		
@@ -543,7 +543,14 @@ func handle_change_held(input: Dictionary):
 		if player.is_current_player():
 			player.held_tool.gun_changed.connect(func(args): gun_changed.emit(args))
 
-func simulate(inputs: Dictionary):
+func local_simulate(input: Dictionary):
+	apply_input_to_simulation(input)
+	
+	# Time-based simulation advancement
+	for player in simulated_players.values():
+		player.simulate()
+
+func simulate(inputs: Dictionary, player_only: bool=false):
 	#print("INFO: Simulating server frame.")
 	
 	# Check if we have everyone's input when processing server
@@ -563,7 +570,9 @@ func simulate(inputs: Dictionary):
 	for player in simulated_players.values():
 		player.simulate()
 	for tracer in simulated_tracers.get_children():
-		tracer.simulate()
+		# Don't trigger ttl reduction in other players tracers!
+		if not player_only or tracer.player_id == multiplayer.get_unique_id():
+			tracer.simulate()
 	
 	# The current, full, state of the server simulation
 	var snapshot = {}
@@ -605,7 +614,6 @@ func simulate(inputs: Dictionary):
 			"rotation": hit.rotation,
 			"id": hit.name
 		}
-
 	return snapshot
 	
 func apply_input_to_simulation(input: Dictionary):

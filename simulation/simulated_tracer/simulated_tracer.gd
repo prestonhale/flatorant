@@ -16,6 +16,12 @@ func _ready():
 	add_point(end)
 
 func simulate():
+	remaining_time_to_live_in_frames -= 1
 	if remaining_time_to_live_in_frames <= 0:
 		queue_free()
-	remaining_time_to_live_in_frames -= 1
+
+func reconcile_to(tracer_data: Dictionary):
+	player_id = tracer_data["player_id"]
+	start = tracer_data["start"]
+	end = tracer_data["end"]
+	remaining_time_to_live_in_frames = tracer_data["ttl"]
