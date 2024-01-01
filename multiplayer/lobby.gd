@@ -12,6 +12,8 @@ const PORT = 7000
 const DEFAULT_SERVER_IP = "127.0.0.1" # IPv4 localhost
 const MAX_CONNECTIONS = 20
 
+@onready var hud = $/root/Game/UI/HUD
+
 # This will contain player info for every player, with the keys being each player's unique IDs.
 var players = {}
 
@@ -76,7 +78,10 @@ func load_level(game_scene_path: String):
 		level.remove_child(c)
 		c.queue_free()
 	# Add new level.
-	level.add_child(load(game_scene_path).instantiate())
+	var main_level = load(game_scene_path).instantiate()
+	level.add_child(main_level)
+	hud.level_changed(main_level)
+	
 
 # Every peer will call this when they have loaded the game scene.
 @rpc("any_peer", "call_local", "reliable")

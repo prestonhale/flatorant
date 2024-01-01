@@ -2,8 +2,9 @@ extends Resource
 
 const gun_types = {
 	"pistol": {
+		"name": "pistol",
 		"rate_of_fire": 45,
-		"magazine_size": 6,
+		"max_ammo": 6,
 		"is_large": false,
 		"movement_penalty": 0.2,
 		"body_damage": 25,
@@ -13,8 +14,9 @@ const gun_types = {
 		]
 	},
 	"rapid": {
+		"name": "rifle",
 		"rate_of_fire": 8,
-		"magazine_size": 25,
+		"max_ammo": 25,
 		"is_large": true,
 		"body_damage": 25,
 		"head_damage": 150,

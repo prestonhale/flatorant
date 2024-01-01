@@ -53,12 +53,12 @@ func _ready():
 		$VisionCone2D.hide()
 
 func pickup_gun(gun: Gun):
+	gun.cur_ammo = gun.gun_type.max_ammo
 	if gun.gun_type.is_large:
 		large_gun = gun
-		held_tool = gun
 	else:
 		small_gun = gun
-		held_tool = gun
+	held_tool = gun
 	# TODO: Drop current gun if holding one
 
 func change_held(held_selection: PlayerInput.held_selection):

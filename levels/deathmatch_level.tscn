@@ -28,7 +28,7 @@ size = Vector2(201.625, 182.063)
 size = Vector2(123, 232)
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_an7b3"]
-size = Vector2(216.906, 260.129)
+size = Vector2(272.453, 260.129)
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_6oi4v"]
 size = Vector2(216.906, 188.016)
@@ -82,10 +82,13 @@ position = Vector2(-6.5, -65)
 shape = SubResource("RectangleShape2D_xopuh")
 
 [node name="DeathmatchStartPosition6" parent="StartPositions" instance=ExtResource("3_ntd8v")]
-position = Vector2(942, 42)
+position = Vector2(762, 27)
+
+[node name="EnemyCheckArea" parent="StartPositions/DeathmatchStartPosition6" index="0"]
+position = Vector2(21, 0)
 
 [node name="CollisionShape2D" parent="StartPositions/DeathmatchStartPosition6/EnemyCheckArea" index="0"]
-position = Vector2(46.0938, 61.7422)
+position = Vector2(95.7734, -27)
 shape = SubResource("RectangleShape2D_an7b3")
 
 [node name="DeathmatchStartPosition7" parent="StartPositions" instance=ExtResource("3_ntd8v")]
@@ -99,7 +102,7 @@ shape = SubResource("RectangleShape2D_an7b3")
 position = Vector2(813, 231)
 
 [node name="CollisionShape2D" parent="StartPositions/DeathmatchStartPosition8/EnemyCheckArea" index="0"]
-position = Vector2(58, 37.9919)
+position = Vector2(52, 37)
 shape = SubResource("RectangleShape2D_6oi4v")
 
 [node name="PlayerReference" parent="." instance=ExtResource("4_ospp6")]

@@ -1,8 +1,17 @@
-[gd_scene load_steps=9 format=3 uid="uid://ig82qvja135b"]
+[gd_scene load_steps=12 format=3 uid="uid://ig82qvja135b"]
 
+[ext_resource type="Script" path="res://game/hud.gd" id="1_p0ic8"]
 [ext_resource type="FontFile" uid="uid://divk8fhqyqbdc" path="res://game/Valorant Font.ttf" id="2_v0ch6"]
 [ext_resource type="Script" path="res://game/connect_to_lobby.gd" id="3_do616"]
 [ext_resource type="Texture2D" uid="uid://ba6q8s83isana" path="res://art/crab.png" id="4_6ow2m"]
+
+[sub_resource type="LabelSettings" id="LabelSettings_ybdad"]
+font = ExtResource("2_v0ch6")
+font_size = 24
+
+[sub_resource type="LabelSettings" id="LabelSettings_jqg4x"]
+font = ExtResource("2_v0ch6")
+font_size = 24
 
 [sub_resource type="Theme" id="Theme_x852h"]
 default_font = ExtResource("2_v0ch6")
@@ -20,19 +29,56 @@ default_font = ExtResource("2_v0ch6")
 default_font = ExtResource("2_v0ch6")
 default_font_size = 100
 
-[node name="Game" type="Control"]
+[node name="Game" type="Node"]
+
+[node name="Level" type="Node" parent="."]
+
+[node name="UI" type="CanvasLayer" parent="."]
+
+[node name="HUD" type="Control" parent="UI"]
 layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
+script = ExtResource("1_p0ic8")
 
-[node name="Level" type="Node" parent="."]
-
-[node name="ConnectToLobbyUI" type="Control" parent="."]
-process_mode = 3
+[node name="GunName" type="Label" parent="UI/HUD"]
 layout_mode = 1
+anchors_preset = 7
+anchor_left = 0.5
+anchor_top = 1.0
+anchor_right = 0.5
+anchor_bottom = 1.0
+offset_left = -127.5
+offset_top = -39.0
+offset_right = -64.5
+offset_bottom = -15.0
+grow_horizontal = 2
+grow_vertical = 0
+text = "Rifle"
+label_settings = SubResource("LabelSettings_ybdad")
+
+[node name="Ammo" type="Label" parent="UI/HUD"]
+layout_mode = 1
+anchors_preset = 7
+anchor_left = 0.5
+anchor_top = 1.0
+anchor_right = 0.5
+anchor_bottom = 1.0
+offset_left = 64.5
+offset_top = -39.0
+offset_right = 91.5
+offset_bottom = -15.0
+grow_horizontal = 2
+grow_vertical = 0
+text = "25"
+label_settings = SubResource("LabelSettings_jqg4x")
+
+[node name="ConnectToLobbyUI" type="Control" parent="UI"]
+process_mode = 3
+layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
@@ -40,7 +86,7 @@ grow_horizontal = 2
 grow_vertical = 2
 script = ExtResource("3_do616")
 
-[node name="ColorRect" type="ColorRect" parent="ConnectToLobbyUI"]
+[node name="ColorRect" type="ColorRect" parent="UI/ConnectToLobbyUI"]
 layout_mode = 2
 anchor_right = 1.0
 anchor_bottom = 1.0
@@ -48,7 +94,7 @@ grow_horizontal = 2
 grow_vertical = 2
 color = Color(0.454902, 0.431373, 0.415686, 1)
 
-[node name="Net" type="VBoxContainer" parent="ConnectToLobbyUI"]
+[node name="Net" type="VBoxContainer" parent="UI/ConnectToLobbyUI"]
 layout_mode = 1
 anchors_preset = 5
 anchor_left = 0.5
@@ -61,29 +107,29 @@ grow_horizontal = 2
 size_flags_horizontal = 3
 alignment = 1
 
-[node name="Options" type="HBoxContainer" parent="ConnectToLobbyUI/Net"]
+[node name="Options" type="HBoxContainer" parent="UI/ConnectToLobbyUI/Net"]
 layout_mode = 2
 size_flags_horizontal = 4
 size_flags_vertical = 0
 alignment = 1
 
-[node name="Label" type="Label" parent="ConnectToLobbyUI/Net/Options"]
+[node name="Label" type="Label" parent="UI/ConnectToLobbyUI/Net/Options"]
 layout_mode = 2
 theme = SubResource("Theme_x852h")
 text = "Direct:"
 vertical_alignment = 2
 
-[node name="Host" type="Button" parent="ConnectToLobbyUI/Net/Options"]
+[node name="Host" type="Button" parent="UI/ConnectToLobbyUI/Net/Options"]
 layout_mode = 2
 theme = SubResource("Theme_ai68d")
 text = "Host"
 
-[node name="Connect" type="Button" parent="ConnectToLobbyUI/Net/Options"]
+[node name="Connect" type="Button" parent="UI/ConnectToLobbyUI/Net/Options"]
 layout_mode = 2
 theme = SubResource("Theme_mb1st")
 text = "Connect"
 
-[node name="Remote" type="LineEdit" parent="ConnectToLobbyUI/Net/Options"]
+[node name="Remote" type="LineEdit" parent="UI/ConnectToLobbyUI/Net/Options"]
 layout_mode = 2
 size_flags_horizontal = 4
 size_flags_vertical = 4
@@ -92,7 +138,7 @@ text = "127.0.0.1"
 alignment = 1
 expand_to_text_length = true
 
-[node name="TextEdit" type="RichTextLabel" parent="ConnectToLobbyUI"]
+[node name="TextEdit" type="RichTextLabel" parent="UI/ConnectToLobbyUI"]
 layout_mode = 1
 anchors_preset = 5
 anchor_left = 0.5
@@ -107,7 +153,7 @@ text = "Craborant"
 autowrap_mode = 2
 deselect_on_focus_loss_enabled = false
 
-[node name="TextureRect2" type="TextureRect" parent="ConnectToLobbyUI"]
+[node name="TextureRect2" type="TextureRect" parent="UI/ConnectToLobbyUI"]
 texture_filter = 1
 texture_repeat = 1
 layout_mode = 2

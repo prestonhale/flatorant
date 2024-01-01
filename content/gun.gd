@@ -14,7 +14,9 @@ func simulate():
 	frames_since_last_shot += 1
 
 func can_shoot() -> bool:
-	return frames_since_last_shot >= gun_type.rate_of_fire
+	var ready_to_shoot = frames_since_last_shot >= gun_type.rate_of_fire
+	var has_ammo = cur_ammo > 0
+	return has_ammo and ready_to_shoot
 
 func get_spray_angle(hash: int) -> float:
 	if consecutive_shots >= gun_type.spray_pattern.size():

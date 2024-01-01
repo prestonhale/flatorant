@@ -2,6 +2,10 @@ extends Node2D
 
 class_name Simulation
 
+# ========== Signals ==========
+signal ammo_changed
+signal gun_changed
+
 # ========== Debug ==========
 var debug = false
 # Note: This even applies "latency" to the server!
@@ -443,6 +447,8 @@ func handle_fire_gun(input: Dictionary):
 		
 		player.held_tool.consecutive_shots += 1
 		player.held_tool.frames_since_last_shot = 0
+		player.held_tool.cur_ammo -= 1
+		gun_changed.emit(player.held_tool)
 		
 		# Raycast from player to collision
 		var start_of_ray = player.global_position
@@ -522,6 +528,7 @@ func handle_change_held(input: Dictionary):
 	if input.change_held != null:
 		var player: Player = simulated_players[input.player_id]
 		player.change_held(input.change_held)
+		gun_changed.emit(player.held_tool)
 
 func simulate(inputs: Dictionary):
 	#print("INFO: Simulating server frame.")
@@ -561,7 +568,8 @@ func simulate(inputs: Dictionary):
 			# TODO: Filter so its only sent to the player who shot
 			"held_tool": {
 				"consecutive_shots": player.held_tool.consecutive_shots,
-				"frames_since_last_shot": player.held_tool.frames_since_last_shot
+				"frames_since_last_shot": player.held_tool.frames_since_last_shot,
+				"cur_ammo": player.held_tool.cur_ammo
 			},
 			"frames_since_died": player.frames_since_died,
 		}
