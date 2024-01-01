@@ -65,7 +65,7 @@ func _on_player_disconnected(player_id: int):
 @rpc("reliable", "call_local")
 func add_player(id: int):
 	print("add_player: %d" % id)
-	var position = _get_start_pos().global_position
+	var position = get_open_spawn_position().global_position
 	
 	var player = simulation.add_simulated_player(id, position, 0, Vector2.ZERO)
 
@@ -172,18 +172,6 @@ func _on_character_fired_shot(player_pos: Vector2, shot_pos: Vector2):
 		var p = cones[c]
 		var p_id = c.get_parent().get_parent().player
 		_draw_shot_tracer.rpc_id(p_id, p[0], p[1])
-			
-func _on_player_died(player: Player):
-	print("_on_player_died")
-	player._on_died.rpc()
-	get_tree().create_timer(death_timer).timeout.connect(
-		func (): _on_character_death_timer_expired(player)
-	)
-
-func _on_character_death_timer_expired(player: Player):
-	print("Respawn")
-	player.respawn.rpc()
-	player.position = _get_start_pos().position
 
 func debug_print(a, b):
 	var shot = shot_scn.instantiate()
@@ -197,8 +185,11 @@ func _draw_shot_tracer(point1: Vector2, point2: Vector2):
 	shot.add_point(to_local(point2))
 	add_child(shot)
 	
-func _get_start_pos() -> Node2D:
+func get_open_spawn_position() -> Node2D:
 	var enabled_pos = map.start_positions.get_children().filter(func(pos): return pos.enabled)
+	var open_pos = enabled_pos.filter(func(pos): return pos.check_empty())
+	if open_pos:
+		return open_pos[randi_range(0, (open_pos.size()-1))]
 	return enabled_pos[randi_range(0, (enabled_pos.size()-1))]
 	
 func random_map():

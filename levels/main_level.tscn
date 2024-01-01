@@ -75,7 +75,3 @@ texture = ExtResource("7_s4ue4")
 position_smoothing_speed = 25.0
 rotation_smoothing_speed = 25.0
 script = ExtResource("6_qor8o")
-
-[node name="Debug" type="Label" parent="MainCamera"]
-offset_right = 40.0
-offset_bottom = 23.0

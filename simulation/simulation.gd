@@ -325,7 +325,7 @@ func reconcile_players(player_snapshot_data: Dictionary):
 
 func add_simulated_player(player_id: int, position: Vector2, rotation: float, velocity: Vector2) -> Player:
 	print("DEBUG: Adding player to simulation %d" % player_id)
-	var player = player_scn.instantiate()
+	var player: Player = player_scn.instantiate()
 	simulated_players[player_id] = player
 	player.position = position
 	player.rotation = rotation
@@ -334,6 +334,7 @@ func add_simulated_player(player_id: int, position: Vector2, rotation: float, ve
 	player.velocity = velocity
 	main_level.players.add_child(player)
 	player.player_input.simulation = self
+	player.resurrected.connect(on_player_ressurrected)
 	return player
 
 func remove_simulated_player(player: Player):
@@ -598,3 +599,6 @@ func get_current_player_position() -> Vector2:
 		if player.is_current_player():
 			return player.position
 	return Vector2.ZERO
+
+func on_player_ressurrected(player: Player):
+	player.global_position = main_level.get_open_spawn_position().global_position

@@ -5,7 +5,7 @@ class_name Player
 # Configs
 @export var PLAYER_VISION_LIMIT = 320
 
-signal fired_shot
+signal resurrected
 
 @onready var player_input = $PlayerInput
 @onready var vision_cone = $VisionCone2D
@@ -85,6 +85,7 @@ func simulate():
 		if frames_since_died >= 100:
 			set_health(INITIAL_HEALTH)
 			frames_since_died = 0
+			resurrected.emit(self)
 	
 	held_tool.simulate()
 

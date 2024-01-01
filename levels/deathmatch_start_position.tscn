@@ -1,6 +1,17 @@
-[gd_scene load_steps=2 format=3 uid="uid://8dvktykc83nj"]
+[gd_scene load_steps=3 format=3 uid="uid://8dvktykc83nj"]
 
 [ext_resource type="Script" path="res://levels/deathmatch_start_position.gd" id="1_ldjqu"]
 
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_lcvjt"]
+size = Vector2(129.625, 148.063)
+
 [node name="DeathmatchStartPosition" type="Node2D"]
 script = ExtResource("1_ldjqu")
+
+[node name="EnemyCheckArea" type="Area2D" parent="."]
+collision_layer = 0
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="EnemyCheckArea"]
+position = Vector2(0, -1)
+shape = SubResource("RectangleShape2D_lcvjt")
+debug_color = Color(0, 0.6, 0.701961, 0.137255)
