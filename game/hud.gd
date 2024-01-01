@@ -4,6 +4,7 @@ var level: MainLevel
 
 @onready var gun_name := $GunName
 @onready var ammo := $Ammo
+@onready var reloading := $Reloading
 
 # Called when the node enters the scene tree for the first time.
 func level_changed(level: MainLevel):
@@ -13,3 +14,8 @@ func level_changed(level: MainLevel):
 func _on_gun_changed(gun: Gun):
 	ammo.text = str(gun.cur_ammo)
 	gun_name.text = gun.gun_type.name
+	
+	if gun.state == Gun.GunState.RELOADING:
+		reloading.show()
+	else:
+		reloading.hide()

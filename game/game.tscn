@@ -1,4 +1,4 @@
-[gd_scene load_steps=12 format=3 uid="uid://ig82qvja135b"]
+[gd_scene load_steps=13 format=3 uid="uid://ig82qvja135b"]
 
 [ext_resource type="Script" path="res://game/hud.gd" id="1_p0ic8"]
 [ext_resource type="FontFile" uid="uid://divk8fhqyqbdc" path="res://game/Valorant Font.ttf" id="2_v0ch6"]
@@ -12,6 +12,10 @@ font_size = 24
 [sub_resource type="LabelSettings" id="LabelSettings_jqg4x"]
 font = ExtResource("2_v0ch6")
 font_size = 24
+
+[sub_resource type="LabelSettings" id="LabelSettings_fuhtp"]
+font = ExtResource("2_v0ch6")
+font_size = 8
 
 [sub_resource type="Theme" id="Theme_x852h"]
 default_font = ExtResource("2_v0ch6")
@@ -75,6 +79,23 @@ grow_horizontal = 2
 grow_vertical = 0
 text = "25"
 label_settings = SubResource("LabelSettings_jqg4x")
+
+[node name="Reloading" type="Label" parent="UI/HUD"]
+layout_mode = 1
+anchors_preset = 7
+anchor_left = 0.5
+anchor_top = 1.0
+anchor_right = 0.5
+anchor_bottom = 1.0
+offset_left = 96.5
+offset_top = -27.0
+offset_right = 143.5
+offset_bottom = -19.0
+grow_horizontal = 2
+grow_vertical = 0
+text = "Reloading"
+label_settings = SubResource("LabelSettings_fuhtp")
+vertical_alignment = 2
 
 [node name="ConnectToLobbyUI" type="Control" parent="UI"]
 process_mode = 3
